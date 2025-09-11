@@ -2,6 +2,17 @@
 QR SafeShare helps you securely split and recover passwords, recovery phrases, and notes with QR codes. Everything runs locally in your browser nothing is stored online.
 Supports **Shamir Secret Sharing (n‑of‑k)** and a **2‑of‑2 XOR** method. Nothing is uploaded; all QR logic runs in your browser.
 
+## 🔐 Example use case: Dead Man's Switch
+
+One powerful use case for QR SafeShare is setting up a **dead man's switch**.  
+For example:
+- You split a master password into 2 parts (using XOR).
+- One QR code is stored **physically** in a safe together with a USB stick that holds an encrypted password vault.
+- The other QR code can be **delivered automatically** by a dead man's switch service (for example by sending a private link after a certain condition is met).
+
+With only **one** of the QR codes, there is absolutely no information about the secret the data is indistinguishable from random noise.  
+Even with a supercomputer, nothing can be reconstructed without the required second QR code.
+
 ## 🚀 Live demo
 Project is served at https://qr.area404.nl .
 
