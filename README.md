@@ -85,4 +85,11 @@ No toolchain needed. Clone/download and open the HTML files directly, or serve t
 - `jsqr.min.js` – QR decoding from images (uploads / fallback)
 
 ## 📜 License
-Licensed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
+Licensed under the **MIT License**. See [`LICENSE`](LICENSE) for details
+
+## ☕ Support this project
+
+If you find this project useful and want to support its development, you can [buy me a coffee](https://buymeacoffee.com/qrsafeshare).
+
+[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=qrsafeshare&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/qrsafeshare)
+
