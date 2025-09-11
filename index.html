@@ -7,6 +7,18 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="lib/tailwind.min.css">
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f766e">
+
+<!-- iOS support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- PWA registration -->
+<script defer src="pwa-register.js"></script>
+
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
 <div class="max-w-5xl mx-auto p-6">
@@ -37,13 +49,17 @@
 </main>
 
 
-<footer class="mt-10 text-xs text-gray-500 text-center space-y-3">
+
+<footer class="mt-10 text-xs text-gray-500 text-center space-y-2">
   <p>Disclaimer: gebruik op eigen risico. Controleer altijd je backups.</p>
   <p>
-    Dit project is <a href="https://github.com/cmd1982/qr-safeshare" target="_blank" class="underline">open source</a>. 
+    Dit project is <a href="https://github.com/cmd1982/qr-safeshare" target="_blank" class="underline">open source</a>.
+  </p>
+  <p>
     Steun de ontwikkeling: <a href="https://buymeacoffee.com/qrsafeshare" target="_blank" class="underline">☕ Buy me a coffee</a>
   </p>
 </footer>
+
 
 
 </div>
