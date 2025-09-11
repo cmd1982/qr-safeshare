@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR SafeShare - Split secret</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="lib/tailwind.min.css">
+  <script src="lib/secrets.min.js"></script>
+  <script src="lib/qrcode.min.js"></script>
+<script>try{localStorage.setItem('qrs_lang','en')}catch(e){}</script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+
+<div class="max-w-5xl mx-auto p-6 space-y-6">
+
+  <!-- Header -->
+  <header class="mb-6 text-center flex flex-col items-center gap-2">
+    <a href="index-en.html" class="flex flex-col items-center hover:opacity-80">
+      <img src="logo.svg" alt="QR SafeShare logo" class="w-16 h-16">
+      <span class="text-3xl font-bold text-teal-700">QR SafeShare</span>
+    </a>
+    <p class="text-gray-600">Split secrets into QR codes</p>
+    <div class="text-sm">
+  <a href="split.html" class="underline text-teal-700" onclick="try{localStorage.setItem('qrs_lang','nl')}catch(e){}">NL</a>
+  <span class="mx-1 text-gray-400">|</span>
+  <span class="font-semibold">EN</span>
+</div>
+  </header>
+
+  <!-- Select type -->
+  <section class="bg-white rounded-xl shadow p-6 space-y-4">
+    <label class="block text-sm text-gray-600 font-semibold">Choose secret type</label>
+    <select id="secretType" class="w-full border rounded p-2">
+      <option value="password">Password</option>
+      <option value="crypto">Recovery phrase</option>
+      <option value="note">Free text</option>
+    </select>
+
+    <!-- Password input -->
+    <div id="inputPassword" class="mt-3">
+      <label class="block text-sm text-gray-600">Password</label>
+      <input id="passwordField" type="text" class="w-full border rounded p-2">
+    </div>
+
+    <!-- Recovery phrase input -->
+    <div id="inputCrypto" class="hidden mt-3 space-y-2">
+      <p class="text-sm text-gray-600">
+        Enter your words. The result will be shown as a numbered list automatically.
+      </p>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <script>
+          for(let i=1;i<=25;i++){
+            document.write(`<input id="word${i}" placeholder="${i}" class="border rounded p-2 text-sm">`);
+          }
+        </script>
+      </div>
+    </div>
+
+    <!-- Note input -->
+    <div id="inputNote" class="hidden mt-3">
+      <label class="block text-sm text-gray-600">Free text</label>
+      <textarea id="noteField" rows="5" class="w-full border rounded p-2"></textarea>
+    </div>
+  </section>
+
+  <!-- Method -->
+  <section class="bg-white rounded-xl shadow p-6 space-y-3">
+    <label class="block text-sm text-gray-600 font-semibold">Method</label>
+    <select id="modeSelect" class="w-full border rounded p-2">
+      <option value="shamir">Shamir (n of k)</option>
+      <option value="xor">XOR (2 of 2)</option>
+    </select>
+    <div id="shamirParams" class="flex gap-4 items-end mt-2">
+      <div>
+        <label class="block text-xs">n (number of shares)</label>
+        <input id="nInput" type="number" value="3" min="2" max="5" class="border rounded p-2 w-20">
+      </div>
+      <div>
+        <label class="block text-xs">k (minimum required)</label>
+        <input id="kInput" type="number" value="2" min="2" max="5" class="border rounded p-2 w-20">
+      </div>
+    </div>
+    <p id="nkHelp" class="text-xs text-gray-500 mt-2">
+      <strong>Explanation:</strong> n = total number of shares. k = minimum number of shares required to reconstruct the secret.
+    </p>
+    <button id="btnGenerate" class="bg-teal-600 text-white rounded px-4 py-2 w-full mt-4">Generate QR codes</button>
+
+    <!-- Link to combine -->
+    <div class="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-sm text-gray-700">
+      ⚠️ QR codes created with this tool can only be combined via the 
+      <a href="combine-en.html" class="text-teal-700 underline">Combine</a> page.
+    </div>
+  </section>
+
+  <!-- Result -->
+  <section class="bg-white rounded-xl shadow p-6">
+    <h2 class="text-lg font-semibold mb-3">QR shares</h2>
+    <div id="sharesGrid" class="grid md:grid-cols-2 gap-4"></div>
+
+    <!-- Buy Me a Coffee block -->
+    <div id="bmac-block" style="display:none; text-align:center; margin-top:20px;">
+      <p class="text-gray-700 text-base mb-2">
+        ☕ Do you find QR SafeShare useful?<br>
+        Support the project with a coffee:
+      </p>
+      <a href="https://buymeacoffee.com/qrsafeshare" target="_blank" rel="noopener">
+        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
+             alt="Buy Me a Coffee" class="mx-auto" style="height: 45px;">
+      </a>
+    </div>
+  </section>
+
+  <!-- Template -->
+  <template id="shareCardTmpl">
+    <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2">
+      <div class="label font-semibold"></div>
+      <div class="qr border rounded bg-white"></div>
+      <div class="flex flex-wrap gap-2 justify-center w-full">
+        <button class="dlBtn flex-1 bg-teal-600 text-white rounded px-3 py-1">Download</button>
+        <button class="copyQrBtn flex-1 bg-gray-200 text-gray-800 rounded px-3 py-1">Copy</button>
+      </div>
+      <textarea class="payload w-full border rounded p-2 text-xs font-mono" rows="3" readonly></textarea>
+    </div>
+  </template>
+
+  <!-- Footer -->
+  <footer class="mt-10 text-xs text-gray-500 text-center">
+    <p>Everything runs locally in your browser. Verify your backups.</p>
+    <p class="mt-2"><a class="text-teal-700 underline" href="index-en.html">Back to start</a></p>
+  </footer>
+</div>
+
+<script>
+const $=sel=>document.querySelector(sel);
+function randId(){const u=new Uint32Array(1);crypto.getRandomValues(u);return u[0].toString(16);}
+function strToBytes(s){return new TextEncoder().encode(s);}
+function bytesToHex(bytes){return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function b64uFromBytes(bytes){
+  let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));
+  let b64=btoa(bin);
+  return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+// Notifications
+function notify(text, type='info'){
+  const div=document.createElement('div');
+  div.textContent=text;
+  div.className='fixed bottom-4 left-1/2 -translate-x-1/2 text-sm px-3 py-2 rounded-xl shadow';
+  if(type==='success'){ div.classList.add('bg-green-600','text-white'); }
+  else if(type==='error'){ div.classList.add('bg-red-600','text-white'); }
+  else { div.classList.add('bg-gray-900','text-white'); }
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),2500);
+}
+
+// Clamp n/k to 2..5 and disallow 1
+function clampNumberInput(el){
+  el.addEventListener('input', ()=>{
+    let v = el.value.replace(/\D/g,'');
+    if(v===''){ return; }
+    let n = parseInt(v,10);
+    if(n < 2) n = 2;
+    if(n === 1) n = 2;
+    if(n > 5) n = 5;
+    el.value = n;
+  });
+}
+
+// Toggle inputs
+$('#secretType').addEventListener('change',()=>{
+  $('#inputPassword').classList.add('hidden');
+  $('#inputCrypto').classList.add('hidden');
+  $('#inputNote').classList.add('hidden');
+  if($('#secretType').value==='password') $('#inputPassword').classList.remove('hidden');
+  if($('#secretType').value==='crypto') $('#inputCrypto').classList.remove('hidden');
+  if($('#secretType').value==='note') $('#inputNote').classList.remove('hidden');
+});
+
+clampNumberInput($('#nInput'));
+clampNumberInput($('#kInput'));
+
+// Shamir / XOR toggle
+$('#modeSelect').addEventListener('change',()=>{
+  const isShamir = ($('#modeSelect').value==='shamir');
+  $('#shamirParams').style.display = isShamir ? 'flex' : 'none';
+  const nk = $('#nkHelp'); if(nk) nk.style.display = isShamir ? 'block' : 'none';
+});
+
+// Generate QRs
+$('#btnGenerate').addEventListener('click', async ()=>{
+  let secret="";
+  const type=$('#secretType').value;
+
+  if(type==="password"){
+    secret=$('#passwordField').value.trim();
+    if(!secret){ notify("Enter a password or passphrase","error"); return; }
+  }
+  if(type==="crypto"){
+    const words=[];
+    for(let i=1;i<=25;i++){
+      const val=$(`#word${i}`).value.trim();
+      if(val) words.push(val);
+    }
+    secret=words.join(" ");
+    if(!secret){ notify("Enter your words","error"); return; }
+  }
+  if(type==="note"){
+    secret=$('#noteField').value.trim();
+    if(!secret){ notify("Enter some text","error"); return; }
+  }
+
+  const mode=$('#modeSelect').value;
+  const grid=$('#sharesGrid'); grid.innerHTML='';
+
+  try{
+    if(mode==='shamir'){
+      const n=Math.max(2,Math.min(5,parseInt($('#nInput').value||'3',10)));
+      const k=Math.max(2,Math.min(n,parseInt($('#kInput').value||'2',10)));
+
+      // If Shamir 2/2 → use XOR
+      if(n===2 && k===2){
+        await runXOR(secret, type);
+        return;
+      }
+
+      secrets.init(8);
+      const secretHex=bytesToHex(strToBytes(secret));
+      const rawShares=secrets.share(secretHex,n,k);
+      const id=randId();
+      const envelopes=rawShares.map((s,i)=>({t:'s',c:type,n,k,i:i+1,id,d:s}));
+      await renderShares(envelopes, secret, false);
+      notify('Shamir QR codes created','success');
+      $('#bmac-block').style.display = "block";
+    } else {
+      await runXOR(secret, type);
+    }
+  }catch(e){ notify('Something went wrong: ' + (e?.message||e),'error'); }
+});
+
+async function runXOR(secret, type){
+  const S=strToBytes(secret);
+  const R=new Uint8Array(S.length); crypto.getRandomValues(R);
+  const B=new Uint8Array(S.length); for(let i=0;i<S.length;i++) B[i]=S[i]^R[i];
+  const id=randId();
+  await renderShares([
+    {t:'x',c:type,i:1,id,d:b64uFromBytes(R)},
+    {t:'x',c:type,i:2,id,d:b64uFromBytes(B)}
+  ], secret, true);
+  notify('XOR QR codes created','success');
+  $('#bmac-block').style.display = "block";
+}
+
+// Render dynamic QRs + extra box on XOR part 2
+async function renderShares(envelopes, secret, isXor){
+  const tmpl=$('#shareCardTmpl');
+  const grid=$('#sharesGrid');
+  const payloadLength = secret.length;
+  let qrSize = 250;
+  if(payloadLength>200 && payloadLength<=400) qrSize=300;
+  if(payloadLength>400) qrSize=350;
+
+  for(let i=0;i<envelopes.length;i++){
+    const env=envelopes[i];
+    const node=tmpl.content.firstElementChild.cloneNode(true);
+    node.querySelector('.label').textContent = `Share ${String.fromCharCode(65+i)} (#${env.i})`;
+    const payload=JSON.stringify(env);
+
+    // Render QR
+    const qrContainer=node.querySelector('.qr'); qrContainer.innerHTML='';
+    new QRCode(qrContainer,{ 
+      text: payload, 
+      width: qrSize, 
+      height: qrSize, 
+      correctLevel: QRCode.CorrectLevel.M 
+    });
+
+    // Show payload
+    node.querySelector('.payload').value = payload;
+
+    // Download button
+    node.querySelector('.dlBtn').addEventListener('click', ()=>{
+      setTimeout(()=>{
+        const canvas=qrContainer.querySelector('canvas');
+        let url=canvas?canvas.toDataURL('image/png'):'';
+        if(url){ const a=document.createElement('a'); a.href=url; a.download=`share-${i+1}.png`; a.click(); }
+      },150);
+    });
+
+    // Copy QR button
+    node.querySelector('.copyQrBtn').addEventListener('click', ()=>{
+      const canvas=qrContainer.querySelector('canvas');
+      if(!canvas) return;
+      canvas.toBlob(async (blob)=>{
+        try {
+          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+          notify("QR code copied as image","success");
+        } catch {
+          notify("Could not copy","error");
+        }
+      });
+    });
+
+    // Extra box only for XOR part 2
+    if(isXor && env.i === 2){
+      const url=`${location.origin}/combine-en.html#${encodeURIComponent(payload)}`;
+      const msg = `Here is a special link: this is one of the two codes that together form your secret.\n\nYou will receive the other part as a QR code (for example via email).\n\nOpen the link in your browser to combine the codes:\n${url}`;
+
+      const box=document.createElement('div');
+      box.className="mt-3 w-full bg-gray-100 border rounded p-3 text-center text-xs";
+
+      const label=document.createElement('div');
+      label.className="mb-2 font-semibold text-gray-700 text-sm";
+      label.textContent="Share easily:"; 
+      box.appendChild(label);
+
+      // Copy link (with explanatory text)
+      const copyBtn=document.createElement('button');
+      copyBtn.textContent = "Copy link";
+      copyBtn.className = "block w-full mb-2 bg-gray-600 text-white rounded px-3 py-2 text-sm font-semibold";
+      copyBtn.addEventListener('click', async ()=>{
+        try {
+          await navigator.clipboard.writeText(msg);
+          notify("Link + explainer copied","success");
+        } catch {
+          notify("Could not copy","error");
+        }
+      });
+      box.appendChild(copyBtn);
+
+      // WhatsApp button
+      const waBtn=document.createElement('a');
+      waBtn.href="https://wa.me/?text="+encodeURIComponent(msg);
+      waBtn.target="_blank";
+      waBtn.className="flex items-center justify-center gap-2 w-full bg-green-600 text-white rounded px-3 py-2 text-sm font-semibold";
+      waBtn.innerHTML='<img src="whatsapp.svg" class="w-4 h-4" alt="WhatsApp"> WhatsApp';
+      box.appendChild(waBtn);
+
+      node.appendChild(box);
+    }
+
+    grid.appendChild(node);
+  }
+}
+  
+// Set initial visibility of nkHelp
+window.addEventListener('load', ()=>{
+  const isShamir = ($('#modeSelect').value==='shamir');
+  const nk = $('#nkHelp'); if(nk) nk.style.display = isShamir ? 'block' : 'none';
+});
+</script>
+</body>
+</html>

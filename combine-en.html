@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>QR SafeShare - Combine</title>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/>
+<link href="apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="lib/tailwind.min.css" rel="stylesheet"/>
+<script src="lib/secrets.min.js"></script>
+<style>
+  /* Scanner sizing fix for desktop browsers */
+  #reader {
+    position: relative;
+    max-width: 640px;
+    height: 320px;
+    margin: 0 auto;
+    overflow: hidden; /* prevent video from overlapping following sections */
+  }
+  /* Ensure the injected video/canvas by html5-qrcode fits inside the box */
+  #reader video,
+  #reader__scan_region video,
+  #reader canvas,
+  #reader__scan_region canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    border-radius: 0.75rem;
+    display: block;
+  }
+  #reader__scan_region { height: 100% !important; }
+  @media (max-width: 640px){
+    #reader { height: 260px; }
+  }
+</style>
+<script>try{localStorage.setItem('qrs_lang','en')}catch(e){}</script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+<div class="max-w-5xl mx-auto p-6 space-y-6">
+  <!-- Header -->
+  <header class="mb-6 text-center flex flex-col items-center gap-2">
+    <a class="flex flex-col items-center hover:opacity-80" href="index-en.html">
+      <img alt="QR SafeShare logo" class="w-16 h-16" src="logo.svg"/>
+      <span class="text-3xl font-bold text-teal-700">QR SafeShare</span>
+    </a>
+    <p class="text-gray-600">Combine secrets from QR codes</p>
+    <div class="text-sm"><a class="underline text-teal-700" href="combine.html" onclick="try{localStorage.setItem('qrs_lang','nl')}catch(e){}">NL</a><span class="mx-1 text-gray-400"> | </span><span class="font-semibold">EN</span></div>
+  </header>
+
+  <!-- Scanner + upload -->
+  <section class="bg-white rounded-xl shadow p-6 space-y-4">
+    <div class="w-full h-64 border rounded" id="reader"></div>
+    <input accept="image/*" class="mt-3 block w-full border rounded p-2" id="fileInput" type="file"/>
+  </section>
+
+  <!-- Found parts -->
+  <section class="bg-white rounded-xl shadow p-6">
+    <div class="flex items-center justify-between mb-3"><h2 class="text-lg font-semibold">Scanned parts</h2><button id="resetBtnTop" class="bg-gray-300 text-gray-800 rounded px-3 py-2">Reset</button></div><div id="progressIndicator" class="text-sm font-medium text-gray-700 mb-2">No QR codes scanned yet.</div>
+    <div class="space-y-2" id="foundShares"></div>
+  </section>
+
+  <!-- Result -->
+  <section class="bg-white rounded-xl shadow p-6 hidden" id="resultaat">
+    <h2 class="text-lg font-semibold mb-3">Reconstructed secret</h2>
+    <div id="secretContainer"></div>
+    <div class="flex gap-2 mt-3">
+      <button class="flex-1 bg-teal-600 text-white rounded px-3 py-2" id="copyBtn">Copy</button>
+      <button class="flex-1 bg-gray-300 text-gray-800 rounded px-3 py-2" id="resetBtn">Reset</button>
+    </div>
+    <!-- Buy Me a Coffee -->
+    <div id="bmac-block" style="display:none; text-align:center; margin-top:20px;">
+      <p class="text-gray-700 text-base mb-2">
+        ☕ Do you find QR SafeShare useful?<br/>
+        Support the project with a coffee:
+      </p>
+      <a href="https://buymeacoffee.com/qrsafeshare" rel="noopener" target="_blank">
+        <img alt="Buy Me a Coffee" class="mx-auto" src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" style="height: 45px;"/>
+      </a>
+    </div>
+  </section>
+</div>
+
+<!-- Clear beep via <audio> -->
+<audio id="beepSound" preload="auto">
+  <source src="data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAgP///wDwPwAA8D8AAPB/AADwfwAA8H8AAPB/AADwfwAA8H8AAPB/AADwfwAA8H8AAPB/AADwPwAA" type="audio/wav"/>
+</audio>
+
+<script src="lib/html5-qrcode.min.js"></script>
+<script src="lib/jsqr.min.js"></script>
+<script>
+/* ---------- Audio unlock & feedback (beep + vibration) ---------- */
+(function(){
+  function unlock(){
+    const b=document.getElementById('beepSound');
+    if(!b) return;
+    const handler=()=>{
+      b.muted=true;
+      const pr=b.play();
+      if(pr && pr.then){
+        pr.then(()=>{ b.pause(); b.muted=false; b.currentTime=0; });
+      } else {
+        try{ b.pause(); b.muted=false; b.currentTime=0; }catch(e){}
+      }
+      window.removeEventListener('touchstart', handler, true);
+      window.removeEventListener('click', handler, true);
+      window.removeEventListener('keydown', handler, true);
+    };
+    window.addEventListener('touchstart', handler, true);
+    window.addEventListener('click', handler, true);
+    window.addEventListener('keydown', handler, true);
+  }
+  if(document.readyState==='complete' || document.readyState==='interactive'){
+    unlock();
+  } else {
+    window.addEventListener('DOMContentLoaded', unlock);
+  }
+})();
+
+function feedbackSuccess(){
+  const beep=document.getElementById("beepSound");
+  if(beep){
+    const snd = beep.cloneNode(true);
+    snd.style.display='none';
+    document.body.appendChild(snd);
+    try{ snd.currentTime=0; }catch(e){}
+    snd.play().catch(()=>{});
+    snd.addEventListener('ended', ()=>{ snd.remove(); });
+  }
+  if(navigator.vibrate){
+    navigator.vibrate(150);
+  }
+}
+
+/* ---------- Core logic ---------- */
+let shares = [];
+let secretCategory = null;
+
+// Progress updater
+function updateProgress() {
+  const prog = document.querySelector("#progressIndicator");
+  if (!prog) return;
+  if (shares.length === 0) {
+    prog.textContent = "No QR codes scanned yet.";
+    prog.className = "text-sm font-medium text-gray-700 mb-2";
+    return;
+  }
+  const total = shares[0]?.t === "s" ? shares[0].k : 2;
+  const current = shares.length;
+  const remaining = Math.max(0, total - current);
+  if (remaining > 0) {
+    prog.textContent = `Scanned: ${current}/${total} (still ${remaining} to go)`;
+    prog.className = "text-sm font-medium text-orange-600 mb-2";
+  } else {
+    prog.textContent = `All required QR codes scanned (${current}/${total}) 🎉`;
+    prog.className = "text-sm font-medium text-green-700 mb-2";
+  }
+}
+
+// Status popup
+function showStatus(msg, type="info"){
+  const old = document.querySelector(".popupStatus");
+  if(old) old.remove();
+  const div=document.createElement('div');
+  div.textContent=msg;
+  div.className='popupStatus fixed bottom-4 left-1/2 -translate-x-1/2 text-sm px-3 py-2 rounded-xl shadow z-50';
+  if(type==="success"){ div.classList.add('bg-green-600','text-white'); }
+  else if(type==="error"){ div.classList.add('bg-red-600','text-white'); }
+  else { div.classList.add('bg-gray-900','text-white'); }
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),2500);
+}
+
+// Handle scanned QR payload
+function handleScannedPayload(text){
+  try {
+    const clean = text.trim();
+    const env = JSON.parse(clean);
+    if (shares.some(s => s.id === env.id && s.i === env.i)) {
+      return; // duplicate
+    }
+    
+    // --- Validate that incoming share belongs to the same set ---
+    if (shares.length > 0) {
+      const cur = shares[0];
+      if (env.id !== cur.id) {
+        const msg = `This QR belongs to a different set (id ${env.id}). Current set: ${cur.id}.`;
+        showStatus(msg, "error");
+        return;
+      }
+      if (env.t !== cur.t) {
+        const msg = `QR type doesn't match the current set.`;
+        showStatus(msg, "error");
+        return;
+      }
+      if (env.t === 's') {
+        const k0 = Number(cur.k || 0);
+        const k1 = Number(env.k || 0);
+        if (k0 && k1 && k0 !== k1) {
+          const msg = ``+`Threshold (k) differs: received ${k1}, current ${k0}.`;
+          showStatus(msg, "error");
+          return;
+        }
+      }
+    }
+shares.push(env);
+    updateProgress(); // update progress
+    if(env.c){ secretCategory = env.c; }
+    const div=document.createElement('div');
+    div.textContent = `Part ${env.i} received (id ${env.id})`;
+    div.className="p-2 border rounded bg-gray-100 text-sm";
+    document.querySelector("#foundShares").appendChild(div);
+    showStatus(`QR scanned: part ${env.i} received`,"success");
+    feedbackSuccess();
+    tryRestore();
+  } catch(e){
+    console.error("Invalid payload", e);
+    const t = String(text||"").trim();
+    if (t.startsWith("{")) {
+      showStatus("No valid QR code","error");
+    }
+  }
+}
+
+// Try reconstruct
+function tryRestore(){
+  if(shares.length < 2) return;
+  const type = shares[0].t;
+  if(type === 'x'){ // XOR
+    if(shares.length >= 2){
+      const R = Uint8Array.from(atob(shares[0].d.replace(/-/g,'+').replace(/_/g,'/')), c=>c.charCodeAt(0));
+      const B = Uint8Array.from(atob(shares[1].d.replace(/-/g,'+').replace(/_/g,'/')), c=>c.charCodeAt(0));
+      if (R.length !== B.length) { showStatus('XOR parts length mismatch', 'error'); return; }
+      const S = new Uint8Array(R.length);
+      for(let i=0;i<R.length;i++) S[i]=R[i]^B[i];
+      showSecret(new TextDecoder().decode(S));
+    }
+  }
+  if(type === 's'){ // Shamir
+    if(shares.length >= shares[0].k){
+      const parts = shares.map(s=>s.d);
+      const secretHex = secrets.combine(parts);
+      const bytes = new Uint8Array(secretHex.match(/.{1,2}/g).map(b=>parseInt(b,16)));
+      showSecret(new TextDecoder().decode(bytes));
+    }
+  }
+}
+
+// Show secret
+function showSecret(txt){
+  const cont=document.querySelector("#secretContainer");
+  cont.innerHTML="";
+  if(secretCategory === 'crypto'){
+    const words = txt.trim().split(/\s+/).filter(Boolean);
+    const ol=document.createElement("ol");
+    ol.className="list-decimal list-inside space-y-1 text-sm";
+    words.forEach(w=>{
+      const li=document.createElement("li");
+      li.textContent=w;
+      ol.appendChild(li);
+    });
+    cont.appendChild(ol);
+  } else {
+    const ta=document.createElement("textarea");
+    ta.rows=6;
+    ta.className="w-full border rounded p-2 font-mono";
+    ta.value=txt;
+    cont.appendChild(ta);
+  }
+  document.querySelector("#resultaat").classList.remove("hidden");
+  document.querySelector("#bmac-block").style.display="block";
+  setTimeout(()=>{ cont.scrollIntoView({behavior:"smooth"}); },300);
+  showStatus("✅ Secret reconstructed!","success");
+  feedbackSuccess();
+}
+
+// Copy & reset
+document.querySelector("#copyBtn").addEventListener("click", async ()=>{
+  const ta=document.querySelector("#secretContainer textarea");
+  let textToCopy="";
+  if(ta){ textToCopy=ta.value; }
+  else {
+    textToCopy=[...document.querySelectorAll("#secretContainer li")].map(li=>li.textContent).join(" ");
+  }
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+    showStatus("Secret copied","success");
+    feedbackSuccess();
+  } catch {}
+});
+function doReset(){
+shares=[];
+  updateProgress(); // reset progress
+  document.querySelector("#foundShares").innerHTML="";
+  document.querySelector("#resultaat").classList.add("hidden");
+  document.querySelector("#bmac-block").style.display="none";
+  showStatus("Reset complete","info");
+}
+document.querySelector("#resetBtn").addEventListener("click", doReset);
+const resetBtnTop = document.querySelector("#resetBtnTop");
+if (resetBtnTop) resetBtnTop.addEventListener("click", doReset);
+// Start QR scanner (responsive qrbox + fixed aspect ratio)
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const qrbox = (vw, vh) => {
+  const size = Math.floor(Math.min(vw, vh) * (isMobile ? 0.70 : 0.60));
+  return { width: size, height: size };
+};
+const qr = new Html5Qrcode("reader");
+const cameraConstraints = { facingMode: "environment" };
+const cameraConfig = { fps: 10, qrbox, aspectRatio: 1.333 };
+qr.start(cameraConstraints, cameraConfig, handleScannedPayload);
+
+// Unified upload handler (image+text) with jsQR fallback
+document.querySelector("#fileInput").addEventListener("change", async (e)=>{
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const name = (file.name || "").toLowerCase();
+  const mime = (file.type || "");
+  const looksImage = (mime.startsWith("image/")) || /\.(png|jpe?g|gif|bmp|webp)$/.test(name);
+
+  try {
+    if (looksImage) {
+      let decodedText = null;
+      // 1) html5-qrcode scanFile (requires no ongoing camera scan)
+      if (typeof qr.scanFile === "function") {
+        try {
+          await qr.stop().catch(()=>{});
+          decodedText = await qr.scanFile(file, true);
+        } catch(_e){ decodedText = null; }
+        finally {
+          // restart camera for live scanning again
+          try { await qr.start(cameraConstraints, cameraConfig, handleScannedPayload); } catch(_e){}
+        }
+      }
+      // 2) jsQR fallback
+      if (!decodedText && (typeof jsQR === "function")) {
+        decodedText = await (async function decodeWithJsQR(f){
+          const fr = new FileReader();
+          const url = await new Promise((res, rej)=>{ fr.onerror=()=>rej(new Error("read error")); fr.onload=()=>res(String(fr.result||"")); fr.readAsDataURL(f); });
+          await new Promise((resolve, reject)=>{
+            const img = new Image();
+            img.onload = ()=>resolve();
+            img.onerror = ()=>reject(new Error("img load error"));
+            img.src = url;
+          });
+          const canvas = document.createElement("canvas");
+          const imgEl = new Image(); imgEl.src = url; await imgEl.decode();
+          canvas.width = imgEl.width; canvas.height = imgEl.height;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          ctx.drawImage(imgEl, 0, 0);
+          const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const res = jsQR(data, width, height);
+          if (res && res.data) return res.data;
+          return null;
+        })(file);
+      }
+      if (decodedText) {
+        const clean = String(decodedText||"").trim();
+        try { handleScannedPayload(decodeURIComponent(clean)); } catch { handleScannedPayload(clean); }
+        return;
+      } else {
+        showStatus("No QR found in image. Upload the payload text from split.html.","error");
+        return;
+      }
+    }
+
+    // TEXT path
+    const reader = new FileReader();
+    reader.onload = () => {
+      const txt = String(reader.result || "").trim();
+      handleScannedPayload(txt);
+    };
+    reader.readAsText(file);
+
+  } catch(err){
+    console.error(err);
+    showStatus("Upload error: "+err, "error");
+  } finally {
+    // clear selected file so the same file can be chosen again
+    e.target.value = "";
+  }
+});
+
+// Hash auto-loader
+window.addEventListener("load", ()=>{
+  if(location.hash.length > 1){
+    try {
+      const payload = decodeURIComponent(location.hash.substring(1));
+      location.hash = "";
+      handleScannedPayload(payload);
+    } catch(e){
+      showStatus("Could not process hash","error");
+    }
+  }
+});
+</script>
+<script>try{localStorage.setItem('qrs_lang','en')}catch(e){}</script>
+</body>
+</html>

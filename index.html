@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR SafeShare</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="lib/tailwind.min.css">
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+<div class="max-w-5xl mx-auto p-6">
+
+<header class="mb-8 text-center flex flex-col items-center gap-2">
+  <img src="logo.svg" alt="QR SafeShare logo" class="w-16 h-16">
+  <h1 class="text-3xl font-bold text-teal-700">QR SafeShare</h1>
+  <p class="text-gray-600">
+    Veilig wachtwoorden delen met QR-codes
+  </p>
+  <div class="mt-2 text-sm">
+    <span class="font-semibold">NL</span>
+    <span class="mx-1 text-gray-400">|</span>
+    <a href="index-en.html" class="underline text-teal-700" onclick="try{localStorage.setItem('qrs_lang','en')}catch(e){}">EN</a>
+  </div>
+</header>
+
+<main class="flex flex-col items-center gap-6">
+  <a href="split.html" class="bg-teal-600 text-white px-6 py-3 rounded-xl shadow hover:bg-teal-700 w-64 text-center">
+    Opsplitsen
+  </a>
+  <a href="combine.html" class="bg-teal-600 text-white px-6 py-3 rounded-xl shadow hover:bg-teal-700 w-64 text-center">
+    Samenvoegen
+  </a>
+  <a href="uitleg.html" class="bg-gray-800 text-white px-6 py-3 rounded-xl shadow hover:bg-gray-900 w-64 text-center">
+    Uitleg
+  </a>
+</main>
+
+<footer class="mt-10 text-xs text-gray-500 text-center space-y-3">
+  <p>Disclaimer: gebruik op eigen risico. Controleer altijd je backups.</p>
+  <div class="mt-4">
+    <a href="https://buymeacoffee.com/qrsafeshare" target="_blank" rel="noopener"
+       class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg shadow hover:bg-teal-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M18 8h1a3 3 0 010 6h-1v1a7 7 0 01-14 0V8h14zm1 4a1 1 0 000-2h-1v2h1z"/>
+      </svg>
+      Steun met koffie
+    </a>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>
