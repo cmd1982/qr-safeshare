@@ -11,6 +11,8 @@ const APP_SHELL = [
   './combine-en.html',
   './uitleg.html',
   './uitleg-en.html',
+  './disclaimer.html',
+  './disclaimer-en.html',
   './lib/tailwind.min.css',
   './lib/secrets.min.js',
   './lib/qrcode.min.js',
