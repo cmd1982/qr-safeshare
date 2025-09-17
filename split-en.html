@@ -7,9 +7,207 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="lib/tailwind.min.css">
-  <script src="lib/secrets.min.js"></script>
-  <script src="lib/qrcode.min.js"></script>
-<script>try{localStorage.setItem('qrs_lang','en')}catch(e){}</script>
+  <script src="lib/secrets.min.js">
+// === QR→3MF helpers ===
+function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a;}
+function detectModulePx(canvas){
+  const w=canvas.width,h=canvas.height,ctx=canvas.getContext('2d'),data=ctx.getImageData(0,0,w,h).data;
+  function runGcdRow(y){
+    let g=0,prev=null,run=0;
+    for(let x=0;x<w;x++){
+      const i=(y*w+x)*4; const v=(data[i]+data[i+1]+data[i+2])<384?1:0;
+      if(prev===null){prev=v;run=1;continue;}
+      if(v===prev){run++;} else { if(run>0) g=g?gcd(g,run):run; prev=v; run=1; }
+    }
+    if(run>0) g=g?gcd(g,run):run;
+    return g||1;
+  }
+  return Math.max(1, runGcdRow(Math.floor(h/2)));
+}
+function makeBasePlate(W,H,r,segs,baseH){
+  const P=[];
+  function arc(cx,cy,a0,a1,steps){
+    const pts=[]; const step=(a1-a0)/steps;
+    for(let i=0;i<=steps;i++){
+      const a=(a0+i*step)*Math.PI/180;
+      pts.push([cx + r*Math.cos(a), cy + r*Math.sin(a)]);
+    }
+    return pts;
+  }
+  P.push([r,0],[W-r,0]);
+  P.push(...arc(W-r,r,-90,0,segs).slice(1));
+  P.push([W,H-r]);
+  P.push(...arc(W-r,H-r,0,90,segs).slice(1));
+  P.push([r,H]);
+  P.push(...arc(r,H-r,90,180,segs).slice(1));
+  P.push([0,r]);
+  P.push(...arc(r,r,180,270,segs).slice(1));
+  const C=[W/2,H/2];
+  let tris=[];
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],baseH],[a[0],a[1],baseH],[b[0],b[1],baseH]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],0],[b[0],b[1],0],[a[0],a[1],0]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[a[0],a[1],0],[b[0],b[1],0],[b[0],b[1],baseH]]);tris.push([[a[0],a[1],0],[b[0],b[1],baseH],[a[0],a[1],baseH]]);}
+  return tris;
+}
+function makeQR(canvas,targetSize,baseH,qrH,margin){
+  const modPx=detectModulePx(canvas);
+  const mods=Math.max(1, Math.round(canvas.width/modPx));
+  const modMM=targetSize/mods;
+  const ctx=canvas.getContext('2d');
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  function isDark(mx,my){
+    const cx=Math.floor((mx+0.5)*modPx);
+    const cy=Math.floor((my+0.5)*modPx);
+    const i=(cy*canvas.width+cx)*4;
+    return (data[i]+data[i+1]+data[i+2]) < 384;
+  }
+  let tris=[];
+  for(let my=0; my<mods; my++){
+    for(let mx=0; mx<mods; mx++){
+      if(isDark(mx,my)){
+        const x0=margin + mx*modMM;
+        const y0=margin + (mods-1-my)*modMM;
+        const x1=x0+modMM, y1=y0+modMM, z0=baseH, z1=baseH+qrH;
+        tris.push([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1]],[[x0,y0,z1],[x1,y1,z1],[x0,y1,z1]]);
+        tris.push([[x0,y0,z0],[x1,y1,z0],[x1,y0,z0]],[[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]]);
+        tris.push([[x0,y0,z0],[x1,y0,z0],[x1,y0,z1]],[[x0,y0,z0],[x1,y0,z1],[x0,y0,z1]]);
+        tris.push([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]],[[x1,y0,z0],[x1,y1,z1],[x1,y0,z1]]);
+        tris.push([[x1,y1,z0],[x0,y1,z0],[x0,y1,z1]],[[x1,y1,z0],[x0,y1,z1],[x1,y1,z1]]);
+        tris.push([[x0,y1,z0],[x0,y0,z0],[x0,y0,z1]],[[x0,y1,z0],[x0,y0,z1],[x0,y1,z1]]);
+      }
+    }
+  }
+  return tris;
+}
+function trisToMeshXML(tris){
+  let verts=[], vmap=new Map(), vid=0, facets=[];
+  for(const tri of tris){const vids=[];for(const v of tri){const key=v.join(',');if(!vmap.has(key)){vmap.set(key,vid++);verts.push(v);}vids.push(vmap.get(key));}facets.push(vids);}
+  let xml=`<mesh>`;
+  xml+="<vertices>"+verts.map(v=>`<vertex x="${v[0].toFixed(3)}" y="${v[1].toFixed(3)}" z="${v[2].toFixed(3)}"/>`).join("")+"</vertices>";
+  xml+="<triangles>"+facets.map(f=>`<triangle v1="${f[0]}" v2="${f[1]}" v3="${f[2]}"/>`).join("")+"</triangles>";
+  xml+="</mesh>";
+  return xml;
+}
+async function generate3MF(canvas){
+  const targetSize=50, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const W=targetSize+2*margin, H=targetSize+2*margin;
+  const trisBase=makeBasePlate(W,H,radius,segs,baseH);
+  const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
+  const allTris=[...trisBase,...trisQR];
+  let model=`<?xml version="1.0" encoding="UTF-8"?>`;
+  model+=`<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">`;
+  model+=`<resources><object id="1" type="model">`+trisToMeshXML(allTris)+`</object></resources>`;
+  model+=`<build><item objectid="1"/></build></model>`;
+  const zip=new JSZip();
+  zip.file("[Content_Types].xml",'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>');
+  zip.folder("_rels").file(".rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>');
+  zip.folder("3D").file("3dmodel.model",model);
+  const blob=await zip.generateAsync({type:"blob"});
+  return blob;
+}
+
+</script>
+  <script src="lib/qrcode.min.js">
+// === QR→3MF helpers ===
+function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a;}
+function detectModulePx(canvas){
+  const w=canvas.width,h=canvas.height,ctx=canvas.getContext('2d'),data=ctx.getImageData(0,0,w,h).data;
+  function runGcdRow(y){
+    let g=0,prev=null,run=0;
+    for(let x=0;x<w;x++){
+      const i=(y*w+x)*4; const v=(data[i]+data[i+1]+data[i+2])<384?1:0;
+      if(prev===null){prev=v;run=1;continue;}
+      if(v===prev){run++;} else { if(run>0) g=g?gcd(g,run):run; prev=v; run=1; }
+    }
+    if(run>0) g=g?gcd(g,run):run;
+    return g||1;
+  }
+  return Math.max(1, runGcdRow(Math.floor(h/2)));
+}
+function makeBasePlate(W,H,r,segs,baseH){
+  const P=[];
+  function arc(cx,cy,a0,a1,steps){
+    const pts=[]; const step=(a1-a0)/steps;
+    for(let i=0;i<=steps;i++){
+      const a=(a0+i*step)*Math.PI/180;
+      pts.push([cx + r*Math.cos(a), cy + r*Math.sin(a)]);
+    }
+    return pts;
+  }
+  P.push([r,0],[W-r,0]);
+  P.push(...arc(W-r,r,-90,0,segs).slice(1));
+  P.push([W,H-r]);
+  P.push(...arc(W-r,H-r,0,90,segs).slice(1));
+  P.push([r,H]);
+  P.push(...arc(r,H-r,90,180,segs).slice(1));
+  P.push([0,r]);
+  P.push(...arc(r,r,180,270,segs).slice(1));
+  const C=[W/2,H/2];
+  let tris=[];
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],baseH],[a[0],a[1],baseH],[b[0],b[1],baseH]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],0],[b[0],b[1],0],[a[0],a[1],0]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[a[0],a[1],0],[b[0],b[1],0],[b[0],b[1],baseH]]);tris.push([[a[0],a[1],0],[b[0],b[1],baseH],[a[0],a[1],baseH]]);}
+  return tris;
+}
+function makeQR(canvas,targetSize,baseH,qrH,margin){
+  const modPx=detectModulePx(canvas);
+  const mods=Math.max(1, Math.round(canvas.width/modPx));
+  const modMM=targetSize/mods;
+  const ctx=canvas.getContext('2d');
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  function isDark(mx,my){
+    const cx=Math.floor((mx+0.5)*modPx);
+    const cy=Math.floor((my+0.5)*modPx);
+    const i=(cy*canvas.width+cx)*4;
+    return (data[i]+data[i+1]+data[i+2]) < 384;
+  }
+  let tris=[];
+  for(let my=0; my<mods; my++){
+    for(let mx=0; mx<mods; mx++){
+      if(isDark(mx,my)){
+        const x0=margin + mx*modMM;
+        const y0=margin + (mods-1-my)*modMM;
+        const x1=x0+modMM, y1=y0+modMM, z0=baseH, z1=baseH+qrH;
+        tris.push([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1]],[[x0,y0,z1],[x1,y1,z1],[x0,y1,z1]]);
+        tris.push([[x0,y0,z0],[x1,y1,z0],[x1,y0,z0]],[[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]]);
+        tris.push([[x0,y0,z0],[x1,y0,z0],[x1,y0,z1]],[[x0,y0,z0],[x1,y0,z1],[x0,y0,z1]]);
+        tris.push([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]],[[x1,y0,z0],[x1,y1,z1],[x1,y0,z1]]);
+        tris.push([[x1,y1,z0],[x0,y1,z0],[x0,y1,z1]],[[x1,y1,z0],[x0,y1,z1],[x1,y1,z1]]);
+        tris.push([[x0,y1,z0],[x0,y0,z0],[x0,y0,z1]],[[x0,y1,z0],[x0,y0,z1],[x0,y1,z1]]);
+      }
+    }
+  }
+  return tris;
+}
+function trisToMeshXML(tris){
+  let verts=[], vmap=new Map(), vid=0, facets=[];
+  for(const tri of tris){const vids=[];for(const v of tri){const key=v.join(',');if(!vmap.has(key)){vmap.set(key,vid++);verts.push(v);}vids.push(vmap.get(key));}facets.push(vids);}
+  let xml=`<mesh>`;
+  xml+="<vertices>"+verts.map(v=>`<vertex x="${v[0].toFixed(3)}" y="${v[1].toFixed(3)}" z="${v[2].toFixed(3)}"/>`).join("")+"</vertices>";
+  xml+="<triangles>"+facets.map(f=>`<triangle v1="${f[0]}" v2="${f[1]}" v3="${f[2]}"/>`).join("")+"</triangles>";
+  xml+="</mesh>";
+  return xml;
+}
+async function generate3MF(canvas){
+  const targetSize=50, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const W=targetSize+2*margin, H=targetSize+2*margin;
+  const trisBase=makeBasePlate(W,H,radius,segs,baseH);
+  const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
+  const allTris=[...trisBase,...trisQR];
+  let model=`<?xml version="1.0" encoding="UTF-8"?>`;
+  model+=`<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">`;
+  model+=`<resources><object id="1" type="model">`+trisToMeshXML(allTris)+`</object></resources>`;
+  model+=`<build><item objectid="1"/></build></model>`;
+  const zip=new JSZip();
+  zip.file("[Content_Types].xml",'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>');
+  zip.folder("_rels").file(".rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>');
+  zip.folder("3D").file("3dmodel.model",model);
+  const blob=await zip.generateAsync({type:"blob"});
+  return blob;
+}
+
+</script>
+  <script src="lib/jszip.min.js"></script>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
 
@@ -23,13 +221,13 @@
     </a>
     <p class="text-gray-600">Split secrets into QR codes</p>
     <div class="text-sm">
-  <a href="split.html" class="underline text-teal-700" onclick="try{localStorage.setItem('qrs_lang','nl')}catch(e){}">NL</a>
+  <a href="split.html" class="underline text-teal-700" onclick="try{localStorage.setItem('qrs_lang','en')}catch(e){}">NL</a>
   <span class="mx-1 text-gray-400">|</span>
   <span class="font-semibold">EN</span>
 </div>
   </header>
 
-  <!-- Select type -->
+  <!-- Selecteer type -->
   <section class="bg-white rounded-xl shadow p-6 space-y-4">
     <label class="block text-sm text-gray-600 font-semibold">Choose secret type</label>
     <select id="secretType" class="w-full border rounded p-2">
@@ -50,14 +248,113 @@
         Enter your words. The result will be shown as a numbered list automatically.
       </p>
       <p class="text-sm font-semibold text-red-600">
-        Important: only type the <u>first 4 letters</u> of each word. Devices and wallets that use the official <u>English BIP39 word list</u> (such as Ledger) will automatically recognize the correct word. This keeps the QR code smaller and easier to scan.
+        Important: only type the <u>first 4 letters</u> of each word. Devices and wallets that use the official <u>English BIP39 word list</u> (such as Ledger) will recognize the correct word. This keeps the QR code smaller and easier to scan.
       </p>
       <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
         <script>
           for(let i=1;i<=25;i++){
             document.write(`<input id="word${i}" placeholder="${i}" class="border rounded p-2 text-sm">`);
           }
-        </script>
+        
+// === QR→3MF helpers ===
+function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a;}
+function detectModulePx(canvas){
+  const w=canvas.width,h=canvas.height,ctx=canvas.getContext('2d'),data=ctx.getImageData(0,0,w,h).data;
+  function runGcdRow(y){
+    let g=0,prev=null,run=0;
+    for(let x=0;x<w;x++){
+      const i=(y*w+x)*4; const v=(data[i]+data[i+1]+data[i+2])<384?1:0;
+      if(prev===null){prev=v;run=1;continue;}
+      if(v===prev){run++;} else { if(run>0) g=g?gcd(g,run):run; prev=v; run=1; }
+    }
+    if(run>0) g=g?gcd(g,run):run;
+    return g||1;
+  }
+  return Math.max(1, runGcdRow(Math.floor(h/2)));
+}
+function makeBasePlate(W,H,r,segs,baseH){
+  const P=[];
+  function arc(cx,cy,a0,a1,steps){
+    const pts=[]; const step=(a1-a0)/steps;
+    for(let i=0;i<=steps;i++){
+      const a=(a0+i*step)*Math.PI/180;
+      pts.push([cx + r*Math.cos(a), cy + r*Math.sin(a)]);
+    }
+    return pts;
+  }
+  P.push([r,0],[W-r,0]);
+  P.push(...arc(W-r,r,-90,0,segs).slice(1));
+  P.push([W,H-r]);
+  P.push(...arc(W-r,H-r,0,90,segs).slice(1));
+  P.push([r,H]);
+  P.push(...arc(r,H-r,90,180,segs).slice(1));
+  P.push([0,r]);
+  P.push(...arc(r,r,180,270,segs).slice(1));
+  const C=[W/2,H/2];
+  let tris=[];
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],baseH],[a[0],a[1],baseH],[b[0],b[1],baseH]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],0],[b[0],b[1],0],[a[0],a[1],0]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[a[0],a[1],0],[b[0],b[1],0],[b[0],b[1],baseH]]);tris.push([[a[0],a[1],0],[b[0],b[1],baseH],[a[0],a[1],baseH]]);}
+  return tris;
+}
+function makeQR(canvas,targetSize,baseH,qrH,margin){
+  const modPx=detectModulePx(canvas);
+  const mods=Math.max(1, Math.round(canvas.width/modPx));
+  const modMM=targetSize/mods;
+  const ctx=canvas.getContext('2d');
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  function isDark(mx,my){
+    const cx=Math.floor((mx+0.5)*modPx);
+    const cy=Math.floor((my+0.5)*modPx);
+    const i=(cy*canvas.width+cx)*4;
+    return (data[i]+data[i+1]+data[i+2]) < 384;
+  }
+  let tris=[];
+  for(let my=0; my<mods; my++){
+    for(let mx=0; mx<mods; mx++){
+      if(isDark(mx,my)){
+        const x0=margin + mx*modMM;
+        const y0=margin + (mods-1-my)*modMM;
+        const x1=x0+modMM, y1=y0+modMM, z0=baseH, z1=baseH+qrH;
+        tris.push([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1]],[[x0,y0,z1],[x1,y1,z1],[x0,y1,z1]]);
+        tris.push([[x0,y0,z0],[x1,y1,z0],[x1,y0,z0]],[[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]]);
+        tris.push([[x0,y0,z0],[x1,y0,z0],[x1,y0,z1]],[[x0,y0,z0],[x1,y0,z1],[x0,y0,z1]]);
+        tris.push([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]],[[x1,y0,z0],[x1,y1,z1],[x1,y0,z1]]);
+        tris.push([[x1,y1,z0],[x0,y1,z0],[x0,y1,z1]],[[x1,y1,z0],[x0,y1,z1],[x1,y1,z1]]);
+        tris.push([[x0,y1,z0],[x0,y0,z0],[x0,y0,z1]],[[x0,y1,z0],[x0,y0,z1],[x0,y1,z1]]);
+      }
+    }
+  }
+  return tris;
+}
+function trisToMeshXML(tris){
+  let verts=[], vmap=new Map(), vid=0, facets=[];
+  for(const tri of tris){const vids=[];for(const v of tri){const key=v.join(',');if(!vmap.has(key)){vmap.set(key,vid++);verts.push(v);}vids.push(vmap.get(key));}facets.push(vids);}
+  let xml=`<mesh>`;
+  xml+="<vertices>"+verts.map(v=>`<vertex x="${v[0].toFixed(3)}" y="${v[1].toFixed(3)}" z="${v[2].toFixed(3)}"/>`).join("")+"</vertices>";
+  xml+="<triangles>"+facets.map(f=>`<triangle v1="${f[0]}" v2="${f[1]}" v3="${f[2]}"/>`).join("")+"</triangles>";
+  xml+="</mesh>";
+  return xml;
+}
+async function generate3MF(canvas){
+  const targetSize=50, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const W=targetSize+2*margin, H=targetSize+2*margin;
+  const trisBase=makeBasePlate(W,H,radius,segs,baseH);
+  const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
+  const allTris=[...trisBase,...trisQR];
+  let model=`<?xml version="1.0" encoding="UTF-8"?>`;
+  model+=`<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">`;
+  model+=`<resources><object id="1" type="model">`+trisToMeshXML(allTris)+`</object></resources>`;
+  model+=`<build><item objectid="1"/></build></model>`;
+  const zip=new JSZip();
+  zip.file("[Content_Types].xml",'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>');
+  zip.folder("_rels").file(".rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>');
+  zip.folder("3D").file("3dmodel.model",model);
+  const blob=await zip.generateAsync({type:"blob"});
+  return blob;
+}
+
+</script>
       </div>
     </div>
 
@@ -90,19 +387,19 @@
     </p>
     <button id="btnGenerate" class="bg-teal-600 text-white rounded px-4 py-2 w-full mt-4">Generate QR codes</button>
 
-    <!-- Link to combine -->
+    <!-- Link naar combine -->
     <div class="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-sm text-gray-700">
       ⚠️ QR codes created with this tool can only be combined via the 
-      <a href="combine-en.html" class="text-teal-700 underline">Combine</a> page.
+      <a href="combine-en.html" class="text-teal-700 underline">Combine</a>-pagina.
     </div>
   </section>
 
-  <!-- Result -->
+  <!-- Resultaat -->
   <section class="bg-white rounded-xl shadow p-6">
     <h2 class="text-lg font-semibold mb-3">QR shares</h2>
     <div id="sharesGrid" class="grid md:grid-cols-2 gap-4"></div>
 
-    <!-- Buy Me a Coffee block -->
+    <!-- Buy Me a Coffee blok -->
     <div id="bmac-block" style="display:none; text-align:center; margin-top:20px;">
       <p class="text-gray-700 text-base mb-2">
         ☕ Do you find QR SafeShare useful?<br>
@@ -120,9 +417,11 @@
     <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2">
       <div class="label font-semibold"></div>
       <div class="qr border rounded bg-white"></div>
-      <div class="flex flex-wrap gap-2 justify-center w-full">
-        <button class="dlBtn flex-1 bg-teal-600 text-white rounded px-3 py-1">Download</button>
-        <button class="copyQrBtn flex-1 bg-gray-200 text-gray-800 rounded px-3 py-1">Copy</button>
+      <div class="grid grid-cols-2 gap-2 w-full">
+        <button class="dlBtn bg-teal-600 text-white rounded px-3 py-2">Download PNG</button>
+        <button class="dl3mfBtn bg-teal-600 text-white rounded px-3 py-2">3MF export</button>
+        <button class="copyQrBtn bg-teal-600 text-white rounded px-3 py-2">Copy QR</button>
+        <button class="copyPayloadBtn bg-teal-600 text-white rounded px-3 py-2">Copy payload</button>
       </div>
       <textarea class="payload w-full border rounded p-2 text-xs font-mono" rows="3" readonly></textarea>
     </div>
@@ -133,7 +432,7 @@
     <p class="text-xs text-gray-500">
     ⚠️ Use at your own risk. You are responsible for your secrets. 
     <a href="disclaimer-en.html" class="underline text-teal-700">Read more</a>
-</p>
+    </p>
   </footer>
 </div>
 
@@ -148,7 +447,7 @@ function b64uFromBytes(bytes){
   return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 
-// Notifications
+// Meldingen
 function notify(text, type='info'){
   const div=document.createElement('div');
   div.textContent=text;
@@ -193,7 +492,7 @@ $('#modeSelect').addEventListener('change',()=>{
   const nk = $('#nkHelp'); if(nk) nk.style.display = isShamir ? 'block' : 'none';
 });
 
-// Generate QRs
+// Genereer QR’s
 $('#btnGenerate').addEventListener('click', async ()=>{
   let secret="";
   const type=$('#secretType').value;
@@ -224,7 +523,7 @@ $('#btnGenerate').addEventListener('click', async ()=>{
       const n=Math.max(2,Math.min(5,parseInt($('#nInput').value||'3',10)));
       const k=Math.max(2,Math.min(n,parseInt($('#kInput').value||'2',10)));
 
-      // If Shamir 2/2 → use XOR
+      // Als Shamir 2/2 is → gebruik XOR
       if(n===2 && k===2){
         await runXOR(secret, type);
         return;
@@ -257,7 +556,7 @@ async function runXOR(secret, type){
   $('#bmac-block').style.display = "block";
 }
 
-// Render dynamic QRs + extra box on XOR part 2
+// Dynamische QR’s + extra blok bij XOR deel 2
 async function renderShares(envelopes, secret, isXor){
   const tmpl=$('#shareCardTmpl');
   const grid=$('#sharesGrid');
@@ -272,7 +571,7 @@ async function renderShares(envelopes, secret, isXor){
     node.querySelector('.label').textContent = `Share ${String.fromCharCode(65+i)} (#${env.i})`;
     const payload=JSON.stringify(env);
 
-    // Render QR
+    // QR-code renderen
     const qrContainer=node.querySelector('.qr'); qrContainer.innerHTML='';
     new QRCode(qrContainer,{ 
       text: payload, 
@@ -281,10 +580,10 @@ async function renderShares(envelopes, secret, isXor){
       correctLevel: QRCode.CorrectLevel.M 
     });
 
-    // Show payload
+    // Payload tonen
     node.querySelector('.payload').value = payload;
 
-    // Download button
+    // Download knop
     node.querySelector('.dlBtn').addEventListener('click', ()=>{
       setTimeout(()=>{
         const canvas=qrContainer.querySelector('canvas');
@@ -293,7 +592,7 @@ async function renderShares(envelopes, secret, isXor){
       },150);
     });
 
-    // Copy QR button
+    // Copy QR knop
     node.querySelector('.copyQrBtn').addEventListener('click', ()=>{
       const canvas=qrContainer.querySelector('canvas');
       if(!canvas) return;
@@ -307,7 +606,7 @@ async function renderShares(envelopes, secret, isXor){
       });
     });
 
-    // Extra box only for XOR part 2
+    // Extra blok alleen bij XOR deel 2
     if(isXor && env.i === 2){
       const url=`${location.origin}/combine-en.html#${encodeURIComponent(payload)}`;
       const msg = `Here is a special link: this is one of the two codes that together form your secret.\n\nYou will receive the other part as a QR code (for example via email).\n\nOpen the link in your browser to combine the codes:\n${url}`;
@@ -320,7 +619,7 @@ async function renderShares(envelopes, secret, isXor){
       label.textContent="Share easily:"; 
       box.appendChild(label);
 
-      // Copy link (with explanatory text)
+      // Copy link (met begeleidende tekst)
       const copyBtn=document.createElement('button');
       copyBtn.textContent = "Copy link";
       copyBtn.className = "block w-full mb-2 bg-gray-600 text-white rounded px-3 py-2 text-sm font-semibold";
@@ -334,7 +633,7 @@ async function renderShares(envelopes, secret, isXor){
       });
       box.appendChild(copyBtn);
 
-      // WhatsApp button
+      // WhatsApp knop
       const waBtn=document.createElement('a');
       waBtn.href="https://wa.me/?text="+encodeURIComponent(msg);
       waBtn.target="_blank";
@@ -345,6 +644,27 @@ async function renderShares(envelopes, secret, isXor){
       node.appendChild(box);
     }
 
+    
+    // Extra handlers for new buttons
+    node.querySelector('.dl3mfBtn').addEventListener('click', async()=>{
+      const canvas = qrContainer.querySelector('canvas');
+      if(canvas){
+        const blob = await generate3MF(canvas);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download=`share-${i+1}.3mf`; a.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    node.querySelector('.copyPayloadBtn').addEventListener('click', async()=>{
+      try{
+        await navigator.clipboard.writeText(payload);
+        notify("Payload gekopieerd","success");
+      }catch{
+        notify("Could not copy","error");
+      }
+    });
+
     grid.appendChild(node);
   }
 }
@@ -354,6 +674,205 @@ window.addEventListener('load', ()=>{
   const isShamir = ($('#modeSelect').value==='shamir');
   const nk = $('#nkHelp'); if(nk) nk.style.display = isShamir ? 'block' : 'none';
 });
+
+// === QR→3MF helpers ===
+function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a;}
+function detectModulePx(canvas){
+  const w=canvas.width,h=canvas.height,ctx=canvas.getContext('2d'),data=ctx.getImageData(0,0,w,h).data;
+  function runGcdRow(y){
+    let g=0,prev=null,run=0;
+    for(let x=0;x<w;x++){
+      const i=(y*w+x)*4; const v=(data[i]+data[i+1]+data[i+2])<384?1:0;
+      if(prev===null){prev=v;run=1;continue;}
+      if(v===prev){run++;} else { if(run>0) g=g?gcd(g,run):run; prev=v; run=1; }
+    }
+    if(run>0) g=g?gcd(g,run):run;
+    return g||1;
+  }
+  return Math.max(1, runGcdRow(Math.floor(h/2)));
+}
+function makeBasePlate(W,H,r,segs,baseH){
+  const P=[];
+  function arc(cx,cy,a0,a1,steps){
+    const pts=[]; const step=(a1-a0)/steps;
+    for(let i=0;i<=steps;i++){
+      const a=(a0+i*step)*Math.PI/180;
+      pts.push([cx + r*Math.cos(a), cy + r*Math.sin(a)]);
+    }
+    return pts;
+  }
+  P.push([r,0],[W-r,0]);
+  P.push(...arc(W-r,r,-90,0,segs).slice(1));
+  P.push([W,H-r]);
+  P.push(...arc(W-r,H-r,0,90,segs).slice(1));
+  P.push([r,H]);
+  P.push(...arc(r,H-r,90,180,segs).slice(1));
+  P.push([0,r]);
+  P.push(...arc(r,r,180,270,segs).slice(1));
+  const C=[W/2,H/2];
+  let tris=[];
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],baseH],[a[0],a[1],baseH],[b[0],b[1],baseH]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],0],[b[0],b[1],0],[a[0],a[1],0]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[a[0],a[1],0],[b[0],b[1],0],[b[0],b[1],baseH]]);tris.push([[a[0],a[1],0],[b[0],b[1],baseH],[a[0],a[1],baseH]]);}
+  return tris;
+}
+function makeQR(canvas,targetSize,baseH,qrH,margin){
+  const modPx=detectModulePx(canvas);
+  const mods=Math.max(1, Math.round(canvas.width/modPx));
+  const modMM=targetSize/mods;
+  const ctx=canvas.getContext('2d');
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  function isDark(mx,my){
+    const cx=Math.floor((mx+0.5)*modPx);
+    const cy=Math.floor((my+0.5)*modPx);
+    const i=(cy*canvas.width+cx)*4;
+    return (data[i]+data[i+1]+data[i+2]) < 384;
+  }
+  let tris=[];
+  for(let my=0; my<mods; my++){
+    for(let mx=0; mx<mods; mx++){
+      if(isDark(mx,my)){
+        const x0=margin + mx*modMM;
+        const y0=margin + (mods-1-my)*modMM;
+        const x1=x0+modMM, y1=y0+modMM, z0=baseH, z1=baseH+qrH;
+        tris.push([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1]],[[x0,y0,z1],[x1,y1,z1],[x0,y1,z1]]);
+        tris.push([[x0,y0,z0],[x1,y1,z0],[x1,y0,z0]],[[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]]);
+        tris.push([[x0,y0,z0],[x1,y0,z0],[x1,y0,z1]],[[x0,y0,z0],[x1,y0,z1],[x0,y0,z1]]);
+        tris.push([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]],[[x1,y0,z0],[x1,y1,z1],[x1,y0,z1]]);
+        tris.push([[x1,y1,z0],[x0,y1,z0],[x0,y1,z1]],[[x1,y1,z0],[x0,y1,z1],[x1,y1,z1]]);
+        tris.push([[x0,y1,z0],[x0,y0,z0],[x0,y0,z1]],[[x0,y1,z0],[x0,y0,z1],[x0,y1,z1]]);
+      }
+    }
+  }
+  return tris;
+}
+function trisToMeshXML(tris){
+  let verts=[], vmap=new Map(), vid=0, facets=[];
+  for(const tri of tris){const vids=[];for(const v of tri){const key=v.join(',');if(!vmap.has(key)){vmap.set(key,vid++);verts.push(v);}vids.push(vmap.get(key));}facets.push(vids);}
+  let xml=`<mesh>`;
+  xml+="<vertices>"+verts.map(v=>`<vertex x="${v[0].toFixed(3)}" y="${v[1].toFixed(3)}" z="${v[2].toFixed(3)}"/>`).join("")+"</vertices>";
+  xml+="<triangles>"+facets.map(f=>`<triangle v1="${f[0]}" v2="${f[1]}" v3="${f[2]}"/>`).join("")+"</triangles>";
+  xml+="</mesh>";
+  return xml;
+}
+async function generate3MF(canvas){
+  const targetSize=50, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const W=targetSize+2*margin, H=targetSize+2*margin;
+  const trisBase=makeBasePlate(W,H,radius,segs,baseH);
+  const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
+  const allTris=[...trisBase,...trisQR];
+  let model=`<?xml version="1.0" encoding="UTF-8"?>`;
+  model+=`<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">`;
+  model+=`<resources><object id="1" type="model">`+trisToMeshXML(allTris)+`</object></resources>`;
+  model+=`<build><item objectid="1"/></build></model>`;
+  const zip=new JSZip();
+  zip.file("[Content_Types].xml",'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>');
+  zip.folder("_rels").file(".rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>');
+  zip.folder("3D").file("3dmodel.model",model);
+  const blob=await zip.generateAsync({type:"blob"});
+  return blob;
+}
+
+</script>
+<script>try{localStorage.setItem('qrs_lang','en')}catch(e){}
+// === QR→3MF helpers ===
+function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a;}
+function detectModulePx(canvas){
+  const w=canvas.width,h=canvas.height,ctx=canvas.getContext('2d'),data=ctx.getImageData(0,0,w,h).data;
+  function runGcdRow(y){
+    let g=0,prev=null,run=0;
+    for(let x=0;x<w;x++){
+      const i=(y*w+x)*4; const v=(data[i]+data[i+1]+data[i+2])<384?1:0;
+      if(prev===null){prev=v;run=1;continue;}
+      if(v===prev){run++;} else { if(run>0) g=g?gcd(g,run):run; prev=v; run=1; }
+    }
+    if(run>0) g=g?gcd(g,run):run;
+    return g||1;
+  }
+  return Math.max(1, runGcdRow(Math.floor(h/2)));
+}
+function makeBasePlate(W,H,r,segs,baseH){
+  const P=[];
+  function arc(cx,cy,a0,a1,steps){
+    const pts=[]; const step=(a1-a0)/steps;
+    for(let i=0;i<=steps;i++){
+      const a=(a0+i*step)*Math.PI/180;
+      pts.push([cx + r*Math.cos(a), cy + r*Math.sin(a)]);
+    }
+    return pts;
+  }
+  P.push([r,0],[W-r,0]);
+  P.push(...arc(W-r,r,-90,0,segs).slice(1));
+  P.push([W,H-r]);
+  P.push(...arc(W-r,H-r,0,90,segs).slice(1));
+  P.push([r,H]);
+  P.push(...arc(r,H-r,90,180,segs).slice(1));
+  P.push([0,r]);
+  P.push(...arc(r,r,180,270,segs).slice(1));
+  const C=[W/2,H/2];
+  let tris=[];
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],baseH],[a[0],a[1],baseH],[b[0],b[1],baseH]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[C[0],C[1],0],[b[0],b[1],0],[a[0],a[1],0]]);}
+  for(let i=0;i<P.length;i++){const a=P[i], b=P[(i+1)%P.length]; tris.push([[a[0],a[1],0],[b[0],b[1],0],[b[0],b[1],baseH]]);tris.push([[a[0],a[1],0],[b[0],b[1],baseH],[a[0],a[1],baseH]]);}
+  return tris;
+}
+function makeQR(canvas,targetSize,baseH,qrH,margin){
+  const modPx=detectModulePx(canvas);
+  const mods=Math.max(1, Math.round(canvas.width/modPx));
+  const modMM=targetSize/mods;
+  const ctx=canvas.getContext('2d');
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  function isDark(mx,my){
+    const cx=Math.floor((mx+0.5)*modPx);
+    const cy=Math.floor((my+0.5)*modPx);
+    const i=(cy*canvas.width+cx)*4;
+    return (data[i]+data[i+1]+data[i+2]) < 384;
+  }
+  let tris=[];
+  for(let my=0; my<mods; my++){
+    for(let mx=0; mx<mods; mx++){
+      if(isDark(mx,my)){
+        const x0=margin + mx*modMM;
+        const y0=margin + (mods-1-my)*modMM;
+        const x1=x0+modMM, y1=y0+modMM, z0=baseH, z1=baseH+qrH;
+        tris.push([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1]],[[x0,y0,z1],[x1,y1,z1],[x0,y1,z1]]);
+        tris.push([[x0,y0,z0],[x1,y1,z0],[x1,y0,z0]],[[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]]);
+        tris.push([[x0,y0,z0],[x1,y0,z0],[x1,y0,z1]],[[x0,y0,z0],[x1,y0,z1],[x0,y0,z1]]);
+        tris.push([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]],[[x1,y0,z0],[x1,y1,z1],[x1,y0,z1]]);
+        tris.push([[x1,y1,z0],[x0,y1,z0],[x0,y1,z1]],[[x1,y1,z0],[x0,y1,z1],[x1,y1,z1]]);
+        tris.push([[x0,y1,z0],[x0,y0,z0],[x0,y0,z1]],[[x0,y1,z0],[x0,y0,z1],[x0,y1,z1]]);
+      }
+    }
+  }
+  return tris;
+}
+function trisToMeshXML(tris){
+  let verts=[], vmap=new Map(), vid=0, facets=[];
+  for(const tri of tris){const vids=[];for(const v of tri){const key=v.join(',');if(!vmap.has(key)){vmap.set(key,vid++);verts.push(v);}vids.push(vmap.get(key));}facets.push(vids);}
+  let xml=`<mesh>`;
+  xml+="<vertices>"+verts.map(v=>`<vertex x="${v[0].toFixed(3)}" y="${v[1].toFixed(3)}" z="${v[2].toFixed(3)}"/>`).join("")+"</vertices>";
+  xml+="<triangles>"+facets.map(f=>`<triangle v1="${f[0]}" v2="${f[1]}" v3="${f[2]}"/>`).join("")+"</triangles>";
+  xml+="</mesh>";
+  return xml;
+}
+async function generate3MF(canvas){
+  const targetSize=50, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const W=targetSize+2*margin, H=targetSize+2*margin;
+  const trisBase=makeBasePlate(W,H,radius,segs,baseH);
+  const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
+  const allTris=[...trisBase,...trisQR];
+  let model=`<?xml version="1.0" encoding="UTF-8"?>`;
+  model+=`<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">`;
+  model+=`<resources><object id="1" type="model">`+trisToMeshXML(allTris)+`</object></resources>`;
+  model+=`<build><item objectid="1"/></build></model>`;
+  const zip=new JSZip();
+  zip.file("[Content_Types].xml",'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>');
+  zip.folder("_rels").file(".rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>');
+  zip.folder("3D").file("3dmodel.model",model);
+  const blob=await zip.generateAsync({type:"blob"});
+  return blob;
+}
+
 </script>
 </body>
 </html>
