@@ -89,7 +89,7 @@ function trisToMeshXML(tris){
   return xml;
 }
 async function generate3MF(canvas){
-  const targetSize=75, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const targetSize=75, qrH=0.3, baseH=2, margin=4, radius=6, segs=16;
   const W=targetSize+2*margin, H=targetSize+2*margin;
   const trisBase=makeBasePlate(W,H,radius,segs,baseH);
   const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
@@ -189,7 +189,7 @@ function trisToMeshXML(tris){
   return xml;
 }
 async function generate3MF(canvas){
-  const targetSize=75, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const targetSize=75, qrH=0.3, baseH=2, margin=4, radius=6, segs=16;
   const W=targetSize+2*margin, H=targetSize+2*margin;
   const trisBase=makeBasePlate(W,H,radius,segs,baseH);
   const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
@@ -337,7 +337,7 @@ function trisToMeshXML(tris){
   return xml;
 }
 async function generate3MF(canvas){
-  const targetSize=75, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const targetSize=75, qrH=0.3, baseH=2, margin=4, radius=6, segs=16;
   const W=targetSize+2*margin, H=targetSize+2*margin;
   const trisBase=makeBasePlate(W,H,radius,segs,baseH);
   const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
@@ -418,7 +418,7 @@ async function generate3MF(canvas){
       <div class="label font-semibold"></div>
       <div class="qr border rounded bg-white"></div>
       <div class="grid grid-cols-2 gap-2 w-full">
-        <button class="dlBtn bg-teal-600 text-white rounded px-3 py-2">Download PNG</button>
+        <button class="dlBtn bg-teal-600 text-white rounded px-3 py-2">Download</button>
         <button class="dl3mfBtn bg-teal-600 text-white rounded px-3 py-2">3MF export</button>
         <button class="copyQrBtn bg-teal-600 text-white rounded px-3 py-2">Copy QR</button>
         <button class="copyPayloadBtn bg-teal-600 text-white rounded px-3 py-2">Copy payload</button>
@@ -756,7 +756,7 @@ function trisToMeshXML(tris){
   return xml;
 }
 async function generate3MF(canvas){
-  const targetSize=75, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const targetSize=75, qrH=0.3, baseH=2, margin=4, radius=6, segs=16;
   const W=targetSize+2*margin, H=targetSize+2*margin;
   const trisBase=makeBasePlate(W,H,radius,segs,baseH);
   const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
@@ -856,7 +856,7 @@ function trisToMeshXML(tris){
   return xml;
 }
 async function generate3MF(canvas){
-  const targetSize=75, qrH=1, baseH=2, margin=4, radius=6, segs=16;
+  const targetSize=75, qrH=0.3, baseH=2, margin=4, radius=6, segs=16;
   const W=targetSize+2*margin, H=targetSize+2*margin;
   const trisBase=makeBasePlate(W,H,radius,segs,baseH);
   const trisQR=makeQR(canvas,targetSize,baseH,qrH,margin);
