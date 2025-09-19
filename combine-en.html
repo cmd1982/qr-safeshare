@@ -14,7 +14,6 @@ try {
   if (chosen === 'nl') {
     var p = location.pathname || '';
     if (!/combine\.html$/.test(p)) {
-      // behoud de hash/payload bij redirect
       location.replace('combine.html' + location.hash);
     }
   } else {

@@ -39,7 +39,6 @@ try{
   if (chosen === 'en') {
     var p = location.pathname || '';
     if (!/combine-en\.html$/.test(p)) {
-      // behoud de hash/payload bij redirect
       location.replace('combine-en.html' + location.hash);
     }
   } else {
