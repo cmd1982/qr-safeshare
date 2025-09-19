@@ -60,8 +60,14 @@ No toolchain required. Clone/download and open the HTML files directly, or serve
 - Designed for **convenience**, not as an ultimate vault. Always verify your backups and assess your threat model.  
 - Be cautious when sharing QR images or payload text: anyone with sufficient shares can reconstruct the secret.  
 
-## 📜 License
-Licensed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
+## 📜 License  
+This project is licensed under the **QR SafeShare License (Non-Commercial)**.  
+See [LICENSE](./LICENSE) for full details.  
+
+⚠️ Important:  
+- Free for personal, educational, and research use.  
+- Commercial use is **not allowed** without permission.  
+- The original “Buy me a coffee” donation link must remain visible in all redistributions or forks.  
 
 ## ☕ Support this project
 If you find this project useful and want to support its development, you can [buy me a coffee](https://buymeacoffee.com/qrsafeshare).
