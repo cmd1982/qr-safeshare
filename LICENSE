@@ -1,10 +1,22 @@
 # QR SafeShare License (Non-Commercial)
 
-Copyright (c) 2025 [Your Name or Alias]
+Copyright (c) 2025 **Jurgen Buwalda (cmd1982 on GitHub)**  
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to use, copy, modify, and distribute the Software **for personal, educational, or research purposes only**, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to use, copy, modify, and distribute the Software **for personal, educational, or research purposes only**, subject to the following conditions:  
 
-- **Commercial use is strictly prohibited** without prior written permission from the copyright holder.  
-- This license does not grant the right to sell, sublicense, or otherwise profit from the Software or derivative works.  
-- Redistributions of the Software, with or without modifications, must include this license and copyright notice.  
-- The Software is provided “as is,” without warranty of any kind. The copyright holder is not liable for any damages arising from the use of the Software.
+1. **Non-Commercial Use Only**  
+   - The Software may not be used, in whole or in part, for commercial purposes without prior written permission from the copyright holder.  
+   - “Commercial purposes” include, but are not limited to, selling, licensing, renting, hosting as a paid service, bundling with commercial products, or otherwise profiting from the Software.  
+
+2. **Redistribution**  
+   - Redistributions of the Software, with or without modifications, must include this license and copyright notice in all copies or substantial portions of the Software.  
+   - Modified versions must clearly state that they are derived from QR SafeShare.  
+   - **The original donation link (“Buy me a coffee”) must remain visible and intact in the source code, README, and any user-facing interface. Removing, altering, or hiding this link is not permitted.**  
+
+3. **No Warranty**  
+   - The Software is provided “as is,” without warranty of any kind, express or implied.  
+   - In no event shall the copyright holder be liable for any claim, damages, or other liability, arising from the use of the Software.  
+
+4. **Attribution**  
+   - Any public use of this Software (including demos, forks, or derivative works) must give clear credit to:  
+     **“QR SafeShare by Jurgen Buwalda (cmd1982 on GitHub)”**.  
