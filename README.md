@@ -50,7 +50,7 @@ QR SafeShare can also be installed as a **Progressive Web App (PWA)** for quick 
    - Alternatively, open the ⋮ menu → **Install app**.  
 3. QR SafeShare will be installed as a standalone application and can be launched directly from your Start menu or applications list.  
 
-Once installed, QR SafeShare works completely offline — no servers, no tracking.  
+👉 Once installed, QR SafeShare can also be used **completely offline**, since all features run locally in your browser.  
 
 ## 🔧 Local use
 No toolchain required. Clone/download and open the HTML files directly, or serve the folder with any static web server.
