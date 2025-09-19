@@ -15,9 +15,6 @@ There’s also a convenient option when creating only **two QR codes**:
 You can generate a special link where one code is already “pre-scanned.” The recipient only needs to scan the second one.  
 This allows you to share a password securely across **two separate channels** (e.g., SMS and email). One channel alone is useless; only both combined make it usable.  
 
-## 🚀 Live demo
-Project is available at [https://qr.area404.nl](https://qr.area404.nl).
-
 ## ✨ Features
 - Split and recover passwords, recovery phrases, or free text.  
 - **Two methods available:**  
@@ -27,7 +24,33 @@ Project is available at [https://qr.area404.nl](https://qr.area404.nl).
 - **Offline & local-only**: no servers, no tracking.  
 - **Multi-language support**: English and Dutch UI (preference stored in `localStorage:qrs_lang`).  
 - **3D printing support**: export QR codes as **3MF files** ready for direct 3D printing.  
-- **Flexible sharing**: generate secure links for 2-part secrets across multiple channels.  
+- **Flexible sharing**: generate secure links for 2-part secrets across multiple channels.
+
+## 🚀 Live demo
+Project is available at [https://qr.area404.nl](https://qr.area404.nl).
+
+## 📱 Use as an App (PWA)  
+
+QR SafeShare can also be installed as a **Progressive Web App (PWA)** for quick access, just like a native app.  
+
+### On Android (Chrome / Edge / Brave)  
+1. Open [qr.area404.nl](https://qr.area404.nl) in your browser.  
+2. Tap the ⋮ menu and choose **“Add to Home screen”**.  
+3. The app will now appear on your home screen and can run fullscreen.  
+
+### On iOS (Safari)  
+1. Open [qr.area404.nl](https://qr.area404.nl) in Safari.  
+2. Tap the **Share** button (square with an arrow).  
+3. Select **“Add to Home Screen”**.  
+4. The app will now be available like a normal app.  
+
+### On Desktop (Chrome / Edge / Brave)  
+1. Open [qr.area404.nl](https://qr.area404.nl) in your browser.  
+2. Click the **install icon** in the address bar (a little computer with a download arrow).  
+   - Alternatively, open the ⋮ menu → **Install app**.  
+3. QR SafeShare will be installed as a standalone application and can be launched directly from your Start menu or applications list.  
+
+Once installed, QR SafeShare works completely offline — no servers, no tracking.  
 
 ## 🔧 Local use
 No toolchain required. Clone/download and open the HTML files directly, or serve the folder with any static web server.
