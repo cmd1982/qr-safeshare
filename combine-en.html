@@ -8,6 +8,21 @@
 <link href="apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="lib/tailwind.min.css" rel="stylesheet"/>
 <script src="lib/secrets.min.js"></script>
+<script>
+try {
+  var chosen = localStorage.getItem('qrs_lang');
+  if (chosen === 'nl') {
+    var p = location.pathname || '';
+    if (!/combine\.html$/.test(p)) {
+      // behoud de hash/payload bij redirect
+      location.replace('combine.html' + location.hash);
+    }
+  } else {
+    localStorage.setItem('qrs_lang','en');
+  }
+}catch(e){}
+</script>
+
 <style>
   /* Scanner sizing fix for desktop browsers */
   #reader {

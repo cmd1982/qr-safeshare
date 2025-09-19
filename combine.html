@@ -38,10 +38,14 @@ try{
   var chosen = localStorage.getItem('qrs_lang');
   if (chosen === 'en') {
     var p = location.pathname || '';
-    if (!/combine-en\.html$/.test(p)) location.replace('combine-en.html');
+    if (!/combine-en\.html$/.test(p)) {
+      // behoud de hash/payload bij redirect
+      location.replace('combine-en.html' + location.hash);
+    }
   } else {
     localStorage.setItem('qrs_lang','nl');
   }
+
 }catch(e){}</script>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
