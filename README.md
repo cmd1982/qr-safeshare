@@ -3,29 +3,39 @@ QR SafeShare helps you securely split and recover passwords, recovery phrases, a
 Everything runs locally in your browser; nothing is stored online.
 
 ## 🔐 Why QR SafeShare?
-Anyone who owns crypto knows the importance of the recovery phrase. It’s the key to your wallet (for example, with a Ledger). If you lose it, or if someone else gets access to it, your crypto is gone. Storing these words safely is therefore crucial.  
+Anyone in crypto knows: your recovery phrase **is the key** to your wallet (e.g., Ledger).  
+Lose it, or let someone else get it, and your funds are gone. Storing it safely is therefore essential.  
 
-With QR SafeShare you can split your recovery phrase into multiple encrypted QR codes. For example, you can create three QR codes but only need two of them to reconstruct the phrase. This gives you flexibility: one can be stored digitally, one printed on paper, and one placed in a safe or entrusted to someone you know. Without the required combination, the QR codes are useless, even a supercomputer can’t reconstruct the secret.  
+With QR SafeShare, you can split your recovery phrase into multiple encrypted QR codes.  
+- Example: create 3 codes but require only 2 to reconstruct (n-of-k).  
+- Store one digitally, print one on paper, and put another in a safe or with someone you trust.  
+- Without the required combination, the codes are useless — even a supercomputer cannot recover the secret.  
 
-There’s also a handy option if you only create two QR codes. You can generate a special link where one QR code is already “pre-scanned,” so the recipient only needs to scan the second one. This can be useful for sharing a password across two different channels (for example SMS and email). The advantage is that someone with access to just one channel cannot do anything with it; only when both parts are combined does it become usable.  
+There’s also a convenient option when creating only **two QR codes**:  
+You can generate a special link where one code is already “pre-scanned.” The recipient only needs to scan the second one.  
+This allows you to share a password securely across **two separate channels** (e.g., SMS and email). One channel alone is useless; only both combined make it usable.  
 
 ## 🚀 Live demo
 Project is available at [https://qr.area404.nl](https://qr.area404.nl).
 
 ## ✨ Features
-- Split **passwords**, **recovery phrases**, or **free text** into multiple QR codes.
-- Two methods: **Shamir (n-of-k)** and **XOR (2-of-2)**.
-- Recover by **scanning** with the camera or **uploading** an image/payload.
-- **Offline/local-only**: no servers, no tracking.
-- English and Dutch UI (separate pages; preference stored in `localStorage:qrs_lang`).
+- Split and recover passwords, recovery phrases, or free text.  
+- **Two methods available:**  
+  - Shamir Secret Sharing (n-of-k).  
+  - XOR (2-of-2).  
+- Recover secrets by scanning with the camera or uploading an image/payload.  
+- **Offline & local-only**: no servers, no tracking.  
+- **Multi-language support**: English and Dutch UI (preference stored in `localStorage:qrs_lang`).  
+- **3D printing support**: export QR codes as **3MF files** ready for direct 3D printing.  
+- **Flexible sharing**: generate secure links for 2-part secrets across multiple channels.  
 
 ## 🔧 Local use
 No toolchain required. Clone/download and open the HTML files directly, or serve the folder with any static web server.
 
 ## 🛡️ Security & privacy
-- All operations run entirely in the browser.
-- This project is designed for convenience; always verify your backups and your threat model.
-- Be careful when sharing QR images or payload text: anyone with sufficient shares can reconstruct the secret.
+- All operations run entirely in the browser.  
+- Designed for **convenience**, not as an ultimate vault. Always verify your backups and assess your threat model.  
+- Be cautious when sharing QR images or payload text: anyone with sufficient shares can reconstruct the secret.  
 
 ## 📜 License
 Licensed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
