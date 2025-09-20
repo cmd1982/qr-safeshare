@@ -30,7 +30,7 @@
 </div>
   </header>
 
-  <!-- Selecteer type -->
+  <!-- Select type -->
   <section class="bg-white rounded-xl shadow p-6 space-y-4">
     <label class="block text-sm text-gray-600 font-semibold">Choose secret type</label>
     <select id="secretType" class="w-full border rounded p-2">
@@ -91,19 +91,19 @@
     </p>
     <button id="btnGenerate" class="bg-teal-600 text-white rounded px-4 py-2 w-full mt-4">Generate QR codes</button>
 
-    <!-- Link naar combine -->
+    <!-- Link to combine -->
     <div class="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-sm text-gray-700">
       ⚠️ QR codes created with this tool can only be combined via the 
-      <a href="combine-en.html" class="text-teal-700 underline">Combine</a>-pagina.
+      <a href="combine-en.html" class="text-teal-700 underline">Combine</a> page.
     </div>
   </section>
 
-  <!-- Resultaat -->
+  <!-- Result -->
   <section class="bg-white rounded-xl shadow p-6">
     <h2 class="text-lg font-semibold mb-3">QR shares</h2>
     <div id="sharesGrid" class="grid md:grid-cols-2 gap-4"></div>
 
-    <!-- Buy Me a Coffee blok -->
+    <!-- Buy Me a Coffee block -->
     <div id="bmac-block" style="display:none; text-align:center; margin-top:20px;">
       <p class="text-gray-700 text-base mb-2">
         ☕ Do you find QR SafeShare useful?<br>
@@ -151,7 +151,7 @@ function b64uFromBytes(bytes){
   return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 
-// Meldingen
+// Notifications
 function notify(text, type='info'){
   const div=document.createElement('div');
   div.textContent=text;
@@ -196,7 +196,7 @@ $('#modeSelect').addEventListener('change',()=>{
   const nk = $('#nkHelp'); if(nk) nk.style.display = isShamir ? 'block' : 'none';
 });
 
-// Genereer QR’s
+// Generate QRs
 $('#btnGenerate').addEventListener('click', async ()=>{
   let secret="";
   const type=$('#secretType').value;
@@ -227,7 +227,7 @@ $('#btnGenerate').addEventListener('click', async ()=>{
       const n=Math.max(2,Math.min(5,parseInt($('#nInput').value||'3',10)));
       const k=Math.max(2,Math.min(n,parseInt($('#kInput').value||'2',10)));
 
-      // Als Shamir 2/2 is → gebruik XOR
+      // If Shamir 2/2 → use XOR
       if(n===2 && k===2){
         await runXOR(secret, type);
         return;
@@ -260,7 +260,7 @@ async function runXOR(secret, type){
   $('#bmac-block').style.display = "block";
 }
 
-// Dynamische QR’s + extra blok bij XOR deel 2
+// Dynamic QRs + extra block for XOR part 2
 async function renderShares(envelopes, secret, isXor){
   const tmpl=$('#shareCardTmpl');
   const grid=$('#sharesGrid');
@@ -275,7 +275,7 @@ async function renderShares(envelopes, secret, isXor){
     node.querySelector('.label').textContent = `Share ${String.fromCharCode(65+i)} (#${env.i})`;
     const payload=JSON.stringify(env);
 
-    // QR-code renderen
+    // Render QR code
     const qrContainer=node.querySelector('.qr'); qrContainer.innerHTML='';
     new QRCode(qrContainer,{ 
       text: payload, 
@@ -284,10 +284,10 @@ async function renderShares(envelopes, secret, isXor){
       correctLevel: QRCode.CorrectLevel.M 
     });
 
-    // Payload tonen
+    // Show payload
     node.querySelector('.payload').value = payload;
 
-    // Download knop
+    // Download button
     node.querySelector('.dlBtn').addEventListener('click', ()=>{
       setTimeout(()=>{
         const canvas=qrContainer.querySelector('canvas');
@@ -296,7 +296,7 @@ async function renderShares(envelopes, secret, isXor){
       },150);
     });
 
-    // Copy QR knop
+    // Copy QR button
     node.querySelector('.copyQrBtn').addEventListener('click', ()=>{
       const canvas=qrContainer.querySelector('canvas');
       if(!canvas) return;
@@ -310,7 +310,7 @@ async function renderShares(envelopes, secret, isXor){
       });
     });
 
-    // Extra blok alleen bij XOR deel 2
+    // Extra block only for XOR part 2
     if(isXor && env.i === 2){
       const url=`${location.origin}/combine-en.html#${encodeURIComponent(payload)}`;
       const msg = `Here is a special link: this is one of the two codes that together form your secret.\n\nYou will receive the other part as a QR code (for example via email).\n\nOpen the link in your browser to combine the codes:\n${url}`;
@@ -323,7 +323,7 @@ async function renderShares(envelopes, secret, isXor){
       label.textContent="Share easily:"; 
       box.appendChild(label);
 
-      // Copy link (met begeleidende tekst)
+      // Copy link (with explanatory text)
       const copyBtn=document.createElement('button');
       copyBtn.textContent = "Copy link";
       copyBtn.className = "block w-full mb-2 bg-gray-600 text-white rounded px-3 py-2 text-sm font-semibold";
@@ -337,7 +337,7 @@ async function renderShares(envelopes, secret, isXor){
       });
       box.appendChild(copyBtn);
 
-      // WhatsApp knop
+      // WhatsApp button
       const waBtn=document.createElement('a');
       waBtn.href="https://wa.me/?text="+encodeURIComponent(msg);
       waBtn.target="_blank";
@@ -363,7 +363,7 @@ async function renderShares(envelopes, secret, isXor){
     node.querySelector('.copyPayloadBtn').addEventListener('click', async()=>{
       try{
         await navigator.clipboard.writeText(payload);
-        notify("Payload gekopieerd","success");
+        notify("Payload copied","success");
       }catch{
         notify("Could not copy","error");
       }
