@@ -1,94 +1,80 @@
-<!-- 
-QR SafeShare by Jurgen Buwalda (cmd1982 on GitHub)
-Licensed under the QR SafeShare License (Non-Commercial).
-See: https://github.com/cmd1982/qr-safeshare
-
-This software includes third-party libraries under their own MIT licenses:
-- html5-qrcode (MIT)
-- jsQR (MIT)
-- JSZip (MIT or GPLv3; MIT chosen)
-- QRCode.js (MIT)
-- secrets.js-grempe (MIT)
-- Tailwind CSS (MIT)
-
-File qrcode3mf.js is original code written for QR SafeShare (with AI-assisted development).
--->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Theme & SEO -->
-  <meta name="theme-color" content="#0f766e">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Title & favicon -->
+  <title>QR SafeShare – Secure secrets with QR codes</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="lib/tailwind.min.css">
+  <link rel="manifest" href="manifest.webmanifest">
+
+  <!-- SEO -->
   <meta name="description" content="QR SafeShare lets you securely split and recover passwords, recovery phrases, and notes into multiple QR codes. 100% offline, open source, and 3D-printable.">
 
-  <!-- Open Graph (Facebook/Discord/LinkedIn previews) -->
-  <meta property="og:title" content="QR SafeShare">
-  <meta property="og:description" content="Securely split and recover secrets with 3D-printable QR codes. 100% offline and open source.">
-  <meta property="og:image" content="logo.png">
-  <meta property="og:url" content="https://qr.area404.nl">
+  <!-- Open Graph -->
+  <meta property="og:title" content="QR SafeShare – Secure secrets with QR codes">
+  <meta property="og:description" content="Split and combine secrets with QR codes. Everything runs locally in your browser – no servers, no tracking.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://qr.area404.nl">
+  <meta property="og:image" content="logo.png">
 
-  <!-- Twitter card -->
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="QR SafeShare">
-  <meta name="twitter:description" content="Securely split and recover secrets with 3D-printable QR codes. 100% offline and open source.">
+  <meta name="twitter:title" content="QR SafeShare – Secure secrets with QR codes">
+  <meta name="twitter:description" content="Securely split and combine secrets with QR codes. 100% offline and open source.">
   <meta name="twitter:image" content="logo.png">
 
   <!-- iOS PWA support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="QR SafeShare">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
-  <!-- Title & icons -->
-  <title>QR SafeShare</title>
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-
-  <!-- Styles & PWA -->
-  <link rel="stylesheet" href="lib/tailwind.min.css">
-  <link rel="manifest" href="manifest.webmanifest">
 
   <!-- PWA registration -->
   <script defer src="pwa-register.js"></script>
 </head>
-
 <body class="bg-gray-50 font-sans text-gray-900">
-<div class="max-w-5xl mx-auto p-6">
+  <div class="max-w-5xl mx-auto p-6">
 
-<header class="mb-8 text-center flex flex-col items-center gap-2">
-  <img src="logo.svg" alt="QR SafeShare logo" class="w-16 h-16">
-  <h1 class="text-3xl font-bold text-teal-700">QR SafeShare</h1>
-  <p class="text-gray-600">
-    Split and protect your passwords and recovery phrases with QR codes
-  </p>
-</header>
+    <header class="mb-8 text-center flex flex-col items-center gap-2">
+      <img src="logo.svg" alt="QR SafeShare logo – split and protect secrets with QR codes" class="w-16 h-16">
+      <h1 class="text-3xl font-bold text-teal-700">QR SafeShare</h1>
+      <p class="text-gray-600">
+        Securely split and protect your passwords and recovery phrases with QR codes
+      </p>
+    </header>
 
-<main class="flex flex-col items-center gap-6">
-  <a href="split.html" class="bg-teal-600 text-white px-6 py-3 rounded-xl shadow hover:bg-teal-700 w-64 text-center">
-    Split
-  </a>
-  <a href="combine.html" class="bg-teal-600 text-white px-6 py-3 rounded-xl shadow hover:bg-teal-700 w-64 text-center">
-    Combine
-  </a>
-  <a href="help.html" class="bg-gray-800 text-white px-6 py-3 rounded-xl shadow hover:bg-gray-900 w-64 text-center">
-    Help
-  </a>
-  <a href="disclaimer.html" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl shadow hover:bg-gray-300 w-64 text-center">
-    Disclaimer
-  </a>
-</main>
+    <main class="flex flex-col items-center gap-6">
+      <a href="split.html" class="bg-teal-600 text-white px-6 py-3 rounded-xl shadow hover:bg-teal-700 w-64 text-center">
+        Split
+      </a>
+      <a href="combine.html" class="bg-teal-600 text-white px-6 py-3 rounded-xl shadow hover:bg-teal-700 w-64 text-center">
+        Combine
+      </a>
+      <a href="help.html" class="bg-gray-800 text-white px-6 py-3 rounded-xl shadow hover:bg-gray-900 w-64 text-center">
+        Help
+      </a>
+      <a href="disclaimer.html" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl shadow hover:bg-gray-300 w-64 text-center">
+        Disclaimer
+      </a>
+    </main>
 
-<footer class="mt-10 mb-6 text-xs text-gray-500 text-center space-y-2">
-<p>
-  This is a personal project that I built and decided to share freely with the community.  
-  It is open source, and the source code is available on  
-  <a href="https://github.com/cmd1982/qr-safeshare" target="_blank" class="underline">GitHub</a>.
-</p>
-<p>
-  If you find it useful, consider supporting it with a coffee:  
-  <a href="https://buymeacoffee.com/qrsafeshare" target="_blank" class="underline">&#x2615;&nbsp;Buy&nbsp;me&nbsp;a&nbsp;coffee</a>
-</p>
-</footer>
+    <footer class="mt-10 mb-6 text-xs text-gray-500 text-center space-y-2">
+      <p>
+        This is a personal project that I built and decided to share freely with the community.  
+        It is open source, and the source code is available on  
+        <a href="https://github.com/cmd1982/qr-safeshare" target="_blank" class="underline">GitHub</a>.
+      </p>
+      <p>
+        If you find it useful, consider supporting it with a coffee:  
+        <a href="https://buymeacoffee.com/qrsafeshare" target="_blank" class="underline">☕&nbsp;Buy&nbsp;me&nbsp;a&nbsp;coffee</a>
+      </p>
+    </footer>
 
-</div>
+  </div>
 </body>
 </html>
