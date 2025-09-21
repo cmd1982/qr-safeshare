@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QR SafeShare - Geheim opsplitsen</title>
+  <title>QR SafeShare - Split secret</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="lib/tailwind.min.css">
@@ -22,36 +22,31 @@
       <img src="logo.svg" alt="QR SafeShare logo" class="w-16 h-16">
       <span class="text-3xl font-bold text-teal-700">QR SafeShare</span>
     </a>
-    <p class="text-gray-600">Opsplitsen van geheimen in QR-codes</p>
-    <div class="text-sm">
-  <span class="font-semibold">NL</span>
-  <span class="mx-1 text-gray-400">|</span>
-  <a href="split-en.html" class="underline text-teal-700" onclick="try{localStorage.setItem('qrs_lang','en')}catch(e){}">EN</a>
-</div>
+    <p class="text-gray-600">Split passwords and recovery phrases into secure QR codes</p>
   </header>
 
-  <!-- Selecteer type -->
+  <!-- Select type -->
   <section class="bg-white rounded-xl shadow p-6 space-y-4">
-    <label class="block text-sm text-gray-600 font-semibold">Kies type geheim</label>
+    <label class="block text-sm text-gray-600 font-semibold">Choose secret type</label>
     <select id="secretType" class="w-full border rounded p-2">
-      <option value="password">Wachtwoord</option>
+      <option value="password">Password</option>
       <option value="crypto">Recovery phrase</option>
-      <option value="note">Willekeurige tekst</option>
+      <option value="note">Free text</option>
     </select>
 
     <!-- Password input -->
     <div id="inputPassword" class="mt-3">
-      <label class="block text-sm text-gray-600">Wachtwoord</label>
+      <label class="block text-sm text-gray-600">Password</label>
       <input id="passwordField" type="text" class="w-full border rounded p-2">
     </div>
 
     <!-- Recovery phrase input -->
     <div id="inputCrypto" class="hidden mt-3 space-y-2">
       <p class="text-sm text-gray-600">
-        Vul je woorden in. Het resultaat wordt automatisch als genummerde lijst weergegeven.
+        Enter your words. The result will be shown as a numbered list automatically.
       </p>
       <p class="text-sm font-semibold text-red-600">
-        Belangrijk: voer per woord alleen de <u>eerste 4 letters</u> in. Apparaten en wallets die de officiële <u>BIP39 Engelse woordenlijst</u> gebruiken (zoals Ledger) herkennen hiermee het juiste woord. Dit verkleint de QR-code en maakt deze beter scanbaar.
+        Important: only type the <u>first 4 letters</u> of each word. Devices and wallets that use the official <u>English BIP39 word list</u> (such as Ledger) will recognize the correct word. This keeps the QR code smaller and easier to scan.
       </p>
       <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
         <script>
@@ -64,50 +59,50 @@
 
     <!-- Note input -->
     <div id="inputNote" class="hidden mt-3">
-      <label class="block text-sm text-gray-600">Willekeurige tekst</label>
+      <label class="block text-sm text-gray-600">Free text</label>
       <textarea id="noteField" rows="5" class="w-full border rounded p-2"></textarea>
     </div>
   </section>
 
-  <!-- Methode -->
+  <!-- Method -->
   <section class="bg-white rounded-xl shadow p-6 space-y-3">
-    <label class="block text-sm text-gray-600 font-semibold">Methode</label>
+    <label class="block text-sm text-gray-600 font-semibold">Method</label>
     <select id="modeSelect" class="w-full border rounded p-2">
-      <option value="shamir">Shamir (n van k)</option>
-      <option value="xor">XOR (2-van-2)</option>
+      <option value="shamir">Shamir (n of k)</option>
+      <option value="xor">XOR (2 of 2)</option>
     </select>
     <div id="shamirParams" class="flex gap-4 items-end mt-2">
       <div>
-        <label class="block text-xs">n (aantal delen)</label>
+        <label class="block text-xs">n (number of shares)</label>
         <input id="nInput" type="number" value="3" min="2" max="5" class="border rounded p-2 w-20">
       </div>
       <div>
-        <label class="block text-xs">k (minimaal nodig)</label>
+        <label class="block text-xs">k (minimum required)</label>
         <input id="kInput" type="number" value="2" min="2" max="5" class="border rounded p-2 w-20">
       </div>
     </div>
     <p id="nkHelp" class="text-xs text-gray-500 mt-2">
-      <strong>Uitleg:</strong> n = totaal aantal delen. k = minimaal aantal delen dat nodig is om het geheim te herstellen.
+      <strong>Explanation:</strong> n = total number of shares. k = minimum number of shares required to reconstruct the secret.
     </p>
-    <button id="btnGenerate" class="bg-teal-600 text-white rounded px-4 py-2 w-full mt-4">Genereer QR's</button>
+    <button id="btnGenerate" class="bg-teal-600 text-white rounded px-4 py-2 w-full mt-4">Generate QR codes</button>
 
-    <!-- Link naar combine -->
+    <!-- Link to combine -->
     <div class="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-sm text-gray-700">
-      ⚠️ QR-codes die met deze tool zijn gemaakt, kunnen alleen gecombineerd worden via de 
-      <a href="combine.html" class="text-teal-700 underline">Samenvoegen</a>-pagina.
+      ⚠️ QR codes created with this tool can only be combined via the 
+      <a href="combine.html" class="text-teal-700 underline">Combine</a> page.
     </div>
   </section>
 
-  <!-- Resultaat -->
+  <!-- Result -->
   <section class="bg-white rounded-xl shadow p-6">
-    <h2 class="text-lg font-semibold mb-3">QR-delen</h2>
+    <h2 class="text-lg font-semibold mb-3">QR shares</h2>
     <div id="sharesGrid" class="grid md:grid-cols-2 gap-4"></div>
 
-    <!-- Buy Me a Coffee blok -->
+    <!-- Buy Me a Coffee block -->
     <div id="bmac-block" style="display:none; text-align:center; margin-top:20px;">
       <p class="text-gray-700 text-base mb-2">
-        ☕ Vind je QR SafeShare handig?<br>
-        Steun het project met een kop koffie:
+        ☕ Do you find QR SafeShare useful?<br>
+        Support the project with a coffee:
       </p>
       <a href="https://buymeacoffee.com/qrsafeshare" target="_blank" rel="noopener">
         <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
@@ -134,8 +129,8 @@
   <!-- Footer -->
   <footer class="mt-10 text-xs text-gray-500 text-center">
     <p class="text-xs text-gray-500">
-    ⚠️ Gebruik op eigen risico. Jij bent verantwoordelijk voor je geheime gegevens. 
-    <a href="disclaimer.html" class="underline text-teal-700">Lees meer</a>
+    ⚠️ Use at your own risk. You are responsible for your secrets. 
+    <a href="disclaimer.html" class="underline text-teal-700">Read more</a>
     </p>
   </footer>
 </div>
@@ -151,7 +146,7 @@ function b64uFromBytes(bytes){
   return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 
-// Meldingen
+// Notifications
 function notify(text, type='info'){
   const div=document.createElement('div');
   div.textContent=text;
@@ -196,14 +191,14 @@ $('#modeSelect').addEventListener('change',()=>{
   const nk = $('#nkHelp'); if(nk) nk.style.display = isShamir ? 'block' : 'none';
 });
 
-// Genereer QR’s
+// Generate QRs
 $('#btnGenerate').addEventListener('click', async ()=>{
   let secret="";
   const type=$('#secretType').value;
 
   if(type==="password"){
     secret=$('#passwordField').value.trim();
-    if(!secret){ notify("Voer een wachtwoord of geheime zin in","error"); return; }
+    if(!secret){ notify("Enter a password or passphrase","error"); return; }
   }
   if(type==="crypto"){
     const words=[];
@@ -212,11 +207,11 @@ $('#btnGenerate').addEventListener('click', async ()=>{
       if(val) words.push(val);
     }
     secret=words.join(" ");
-    if(!secret){ notify("Voer woorden in","error"); return; }
+    if(!secret){ notify("Enter your words","error"); return; }
   }
   if(type==="note"){
     secret=$('#noteField').value.trim();
-    if(!secret){ notify("Voer willekeurige tekst in","error"); return; }
+    if(!secret){ notify("Enter some text","error"); return; }
   }
 
   const mode=$('#modeSelect').value;
@@ -227,7 +222,7 @@ $('#btnGenerate').addEventListener('click', async ()=>{
       const n=Math.max(2,Math.min(5,parseInt($('#nInput').value||'3',10)));
       const k=Math.max(2,Math.min(n,parseInt($('#kInput').value||'2',10)));
 
-      // Als Shamir 2/2 is → gebruik XOR
+      // If Shamir 2/2 → use XOR
       if(n===2 && k===2){
         await runXOR(secret, type);
         return;
@@ -239,12 +234,12 @@ $('#btnGenerate').addEventListener('click', async ()=>{
       const id=randId();
       const envelopes=rawShares.map((s,i)=>({t:'s',c:type,n,k,i:i+1,id,d:s}));
       await renderShares(envelopes, secret, false);
-      notify('Shamir QR-codes gemaakt','success');
+      notify('Shamir QR codes created','success');
       $('#bmac-block').style.display = "block";
     } else {
       await runXOR(secret, type);
     }
-  }catch(e){ notify('Er ging iets mis: ' + (e?.message||e),'error'); }
+  }catch(e){ notify('Something went wrong: ' + (e?.message||e),'error'); }
 });
 
 async function runXOR(secret, type){
@@ -256,11 +251,11 @@ async function runXOR(secret, type){
     {t:'x',c:type,i:1,id,d:b64uFromBytes(R)},
     {t:'x',c:type,i:2,id,d:b64uFromBytes(B)}
   ], secret, true);
-  notify('XOR QR-codes gemaakt','success');
+  notify('XOR QR codes created','success');
   $('#bmac-block').style.display = "block";
 }
 
-// Dynamische QR’s + extra blok bij XOR deel 2
+// Dynamic QRs + extra block for XOR part 2
 async function renderShares(envelopes, secret, isXor){
   const tmpl=$('#shareCardTmpl');
   const grid=$('#sharesGrid');
@@ -272,10 +267,10 @@ async function renderShares(envelopes, secret, isXor){
   for(let i=0;i<envelopes.length;i++){
     const env=envelopes[i];
     const node=tmpl.content.firstElementChild.cloneNode(true);
-    node.querySelector('.label').textContent = `Deel ${String.fromCharCode(65+i)} (#${env.i})`;
+    node.querySelector('.label').textContent = `Share ${String.fromCharCode(65+i)} (#${env.i})`;
     const payload=JSON.stringify(env);
 
-    // QR-code renderen
+    // Render QR code
     const qrContainer=node.querySelector('.qr'); qrContainer.innerHTML='';
     new QRCode(qrContainer,{ 
       text: payload, 
@@ -284,60 +279,60 @@ async function renderShares(envelopes, secret, isXor){
       correctLevel: QRCode.CorrectLevel.M 
     });
 
-    // Payload tonen
+    // Show payload
     node.querySelector('.payload').value = payload;
 
-    // Download knop
+    // Download button
     node.querySelector('.dlBtn').addEventListener('click', ()=>{
       setTimeout(()=>{
         const canvas=qrContainer.querySelector('canvas');
         let url=canvas?canvas.toDataURL('image/png'):'';
-        if(url){ const a=document.createElement('a'); a.href=url; a.download=`deel-${i+1}.png`; a.click(); }
+        if(url){ const a=document.createElement('a'); a.href=url; a.download=`share-${i+1}.png`; a.click(); }
       },150);
     });
 
-    // Kopieer QR knop
+    // Copy QR button
     node.querySelector('.copyQrBtn').addEventListener('click', ()=>{
       const canvas=qrContainer.querySelector('canvas');
       if(!canvas) return;
       canvas.toBlob(async (blob)=>{
         try {
           await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-          notify("QR-code gekopieerd als afbeelding","success");
+          notify("QR code copied as image","success");
         } catch {
-          notify("Kon niet kopiëren","error");
+          notify("Could not copy","error");
         }
       });
     });
 
-    // Extra blok alleen bij XOR deel 2
+    // Extra block only for XOR part 2
     if(isXor && env.i === 2){
       const url=`${location.origin}/combine.html#${encodeURIComponent(payload)}`;
-      const msg = `Hierbij ontvang je een speciale link: dit is één van de twee codes die samen jouw geheim vormen.\n\nHet andere deel ontvang je als QR-code (bijvoorbeeld per e-mail).\n\nOpen de link in je browser om de codes te combineren:\n${url}`;
+      const msg = `Here is a special link: this is one of the two codes that together form your secret.\n\nYou will receive the other part as a QR code (for example via email).\n\nOpen the link in your browser to combine the codes:\n${url}`;
 
       const box=document.createElement('div');
       box.className="mt-3 w-full bg-gray-100 border rounded p-3 text-center text-xs";
 
       const label=document.createElement('div');
       label.className="mb-2 font-semibold text-gray-700 text-sm";
-      label.textContent="Deel eenvoudig:"; 
+      label.textContent="Share easily:"; 
       box.appendChild(label);
 
-      // Kopieer link (met begeleidende tekst)
+      // Copy link (with explanatory text)
       const copyBtn=document.createElement('button');
-      copyBtn.textContent = "Kopieer link";
+      copyBtn.textContent = "Copy link";
       copyBtn.className = "block w-full mb-2 bg-gray-600 text-white rounded px-3 py-2 text-sm font-semibold";
       copyBtn.addEventListener('click', async ()=>{
         try {
           await navigator.clipboard.writeText(msg);
-          notify("Link + uitleg gekopieerd","success");
+          notify("Link + explainer copied","success");
         } catch {
-          notify("Kon niet kopiëren","error");
+          notify("Could not copy","error");
         }
       });
       box.appendChild(copyBtn);
 
-      // WhatsApp knop
+      // WhatsApp button
       const waBtn=document.createElement('a');
       waBtn.href="https://wa.me/?text="+encodeURIComponent(msg);
       waBtn.target="_blank";
@@ -355,7 +350,7 @@ async function renderShares(envelopes, secret, isXor){
       if(canvas){
         const blob = await generate3MF(canvas);
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download=`deel-${i+1}.3mf`; a.click();
+        const a = document.createElement('a'); a.href=url; a.download=`share-${i+1}.3mf`; a.click();
         URL.revokeObjectURL(url);
       }
     });
@@ -363,9 +358,9 @@ async function renderShares(envelopes, secret, isXor){
     node.querySelector('.copyPayloadBtn').addEventListener('click', async()=>{
       try{
         await navigator.clipboard.writeText(payload);
-        notify("Payload gekopieerd","success");
+        notify("Payload copied","success");
       }catch{
-        notify("Kon niet kopiëren","error");
+        notify("Could not copy","error");
       }
     });
 
@@ -378,8 +373,6 @@ window.addEventListener('load', ()=>{
   const isShamir = ($('#modeSelect').value==='shamir');
   const nk = $('#nkHelp'); if(nk) nk.style.display = isShamir ? 'block' : 'none';
 });
-
 </script>
-<script>try{localStorage.setItem('qrs_lang','nl')}catch(e){}</script>
 </body>
 </html>
