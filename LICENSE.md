@@ -57,6 +57,10 @@ These libraries are licensed separately under their own open-source licenses.
 - This file is original code written for QR SafeShare (with AI-assisted development).
 - License: QR SafeShare License (Non-Commercial)
 
+### BIP39 English Wordlist
+- Source: [bitcoin/bips – BIP-0039 English wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt)
+- License: Public domain (no explicit license; considered part of the Bitcoin protocol specification)
+
 ---
 
 ## Notes
