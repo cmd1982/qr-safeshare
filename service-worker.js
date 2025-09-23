@@ -2,24 +2,29 @@
 const VERSION = 'qrs-v1.0.0';
 const RUNTIME_CACHE = 'runtime-' + VERSION;
 const APP_SHELL = [
-  './',
-  './index.html',
-  './index-en.html',
-  './split.html',
-  './split-en.html',
-  './combine.html',
-  './combine-en.html',
-  './uitleg.html',
-  './uitleg-en.html',
-  './disclaimer.html',
-  './disclaimer-en.html',
-  './lib/tailwind.min.css',
-  './lib/secrets.min.js',
-  './lib/qrcode.min.js',
-  './lib/html5-qrcode.min.js',
-  './lib/jsqr.min.js',
-  './logo.svg',
-  './favicon.ico'
+    "./apple-touch-icon.png",
+    "./combine.html",
+    "./disclaimer.html",
+    "./favicon.ico",
+    "./help.html",
+    "./images/combine.png",
+    "./images/shamir.png",
+    "./images/split.png",
+    "./index.html",
+    "./lib/bip39-english.js",
+    "./lib/html5-qrcode.min.js",
+    "./lib/jsqr.min.js",
+    "./lib/jszip.min.js",
+    "./lib/qrcode.min.js",
+    "./lib/qrcode3mf.js",
+    "./lib/secrets.min.js",
+    "./lib/tailwind.min.css",
+    "./logo.svg",
+    "./pwa-register.js",
+    "./qr-safeshare-192.png",
+    "./qr-safeshare-512.png",
+    "./split.html",
+    "./whatsapp.svg"
 ];
 
 self.addEventListener('install', (event) => {
