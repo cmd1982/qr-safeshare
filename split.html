@@ -11,6 +11,7 @@
   <script src="lib/qrcode.min.js"></script>
   <script src="lib/jszip.min.js"></script>
   <script src="lib/qrcode3mf.js"></script>
+  <script src="lib/bip39-english.js"></script>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
 
@@ -30,7 +31,7 @@
     <label class="block text-sm text-gray-600 font-semibold">Choose secret type</label>
     <select id="secretType" class="w-full border rounded p-2">
       <option value="password">Password</option>
-      <option value="crypto">Recovery phrase</option>
+      <option value="crypto">Crypto recovery phrase</option>
       <option value="note">Free text</option>
     </select>
 
@@ -41,19 +42,31 @@
     </div>
 
     <!-- Recovery phrase input -->
-    <div id="inputCrypto" class="hidden mt-3 space-y-2">
+    <div id="inputCrypto" class="hidden mt-3 space-y-3">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 class="font-semibold text-blue-900 mb-2">Recovery Phrase Input</h4>
+        <div class="text-sm text-blue-800 space-y-2">
+          <p><strong>What it is:</strong> Your 12 or 24-word backup phrase from wallets like Ledger, MetaMask, or Trust Wallet</p>
+          <p><strong>Compatible with:</strong> English BIP39-compliant recovery phrases only</p>
+          <p><strong>How to use:</strong> Start typing any word and it will auto-complete. Press Enter or Space to accept and move to the next field</p>
+          <p><strong>Why it's better:</strong> Your words get compressed into much smaller QR codes that are perfect for 3D printing</p>
+        </div>
+      </div>
+      
       <p class="text-sm text-gray-600">
-        Enter your words. The result will be shown as a numbered list automatically.
+        Enter your recovery phrase words below. You can type full words or just the first few letters.
       </p>
-      <p class="text-sm font-semibold text-red-600">
-        Important: only type the <u>first 4 letters</u> of each word. Devices and wallets that use the official <u>English BIP39 word list</u> (such as Ledger) will recognize the correct word. This keeps the QR code smaller and easier to scan.
-      </p>
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+      
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
         <script>
-          for(let i=1;i<=25;i++){
-            document.write(`<input id="word${i}" placeholder="${i}" class="border rounded p-2 text-sm">`);
+          for(let i=1;i<=24;i++){
+            document.write(`<input id="word${i}" placeholder="${i}" class="border rounded p-2 text-sm word-input" autocomplete="off" spellcheck="false" data-word-index="${i}">`);
           }
         </script>
+      </div>
+      
+      <div class="text-xs text-gray-500 mt-2">
+        <p><strong>Security note:</strong> Only enter recovery phrases you want to split for backup purposes. Never share your complete phrase with anyone.</p>
       </div>
     </div>
 
@@ -144,14 +157,124 @@ function b64uFromBytes(bytes){
   return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 
-// Notifications
+// BIP39 helper functions - English only for better compression
+const BIP39_LANGUAGES = {
+  english: typeof BIP39_ENGLISH !== 'undefined' ? BIP39_ENGLISH : null
+};
+
+function findWordInList(input, wordlist) {
+  const lower = input.toLowerCase().trim();
+  
+  // Exact match first
+  const exactIndex = wordlist.indexOf(lower);
+  if (exactIndex !== -1) {
+    return { word: lower, index: exactIndex };
+  }
+  
+  // Prefix match
+  for (let i = 0; i < wordlist.length; i++) {
+    if (wordlist[i].startsWith(lower)) {
+      return { word: wordlist[i], index: i };
+    }
+  }
+  
+  return null;
+}
+
+function detectLanguageAndFindWord(input) {
+  // Only English support now
+  const wordlist = BIP39_LANGUAGES.english;
+  if (!wordlist) return null;
+  
+  const result = findWordInList(input, wordlist);
+  if (result) {
+    return { word: result.word, index: result.index };
+  }
+  
+  return null;
+}
+
+function wordToIndex(word, wordlist) {
+  return wordlist.indexOf(word.toLowerCase());
+}
+
+function indexToWord(index, wordlist) {
+  return wordlist[index] || null;
+}
+
+// Optimized BIP39 compression - English only
+function compressBip39Phrase(phrase) {
+  const words = phrase.trim().split(/\s+/).filter(w => w.length > 0);
+  const indices = [];
+  const wordlist = BIP39_LANGUAGES.english;
+  
+  if (!wordlist) {
+    throw new Error('English BIP39 wordlist not loaded');
+  }
+  
+  for (const word of words) {
+    const result = detectLanguageAndFindWord(word);
+    if (!result) {
+      throw new Error(`"${word}" not in BIP39 English wordlist`);
+    }
+    indices.push(result.index);
+  }
+  
+  // Pack indices into bytes (11 bits per index)
+  const bitString = indices.map(i => i.toString(2).padStart(11, '0')).join('');
+  const bytes = [];
+  
+  for (let i = 0; i < bitString.length; i += 8) {
+    const byte = bitString.substr(i, 8).padEnd(8, '0');
+    bytes.push(parseInt(byte, 2));
+  }
+  
+  // Return optimized data
+  return {
+    bytes: new Uint8Array(bytes),
+    wordCount: words.length
+  };
+}
+
+// Decompress function 
+function decompressBip39Phrase(bytes, language = 'english', wordCount = null) {
+  const wordlist = BIP39_LANGUAGES[language] || BIP39_LANGUAGES.english;
+  
+  // Convert bytes to bit string
+  let bitString = '';
+  for (const byte of bytes) {
+    bitString += byte.toString(2).padStart(8, '0');
+  }
+  
+  // Extract 11-bit indices
+  const indices = [];
+  const maxIndices = wordCount || Math.floor(bitString.length / 11);
+  
+  for (let i = 0; i < bitString.length - 10 && indices.length < maxIndices; i += 11) {
+    const indexBits = bitString.substr(i, 11);
+    const index = parseInt(indexBits, 2);
+    if (index < wordlist.length) {
+      indices.push(index);
+    }
+  }
+  
+  return indices.map(i => indexToWord(i, wordlist)).filter(Boolean).join(' ');
+}
+
+// Improved notification system with proper z-index management
 function notify(text, type='info'){
+  // Remove any existing notifications first to prevent overlap
+  const existingNotifications = document.querySelectorAll('.notification-popup');
+  existingNotifications.forEach(notification => notification.remove());
+  
   const div=document.createElement('div');
   div.textContent=text;
-  div.className='fixed bottom-4 left-1/2 -translate-x-1/2 text-sm px-3 py-2 rounded-xl shadow';
+  div.className='notification-popup fixed bottom-4 left-1/2 -translate-x-1/2 text-sm px-3 py-2 rounded-xl shadow-lg z-[9999]';
+  
   if(type==='success'){ div.classList.add('bg-green-600','text-white'); }
   else if(type==='error'){ div.classList.add('bg-red-600','text-white'); }
   else { div.classList.add('bg-gray-900','text-white'); }
+  
   document.body.appendChild(div);
   setTimeout(()=>div.remove(),2500);
 }
@@ -192,24 +315,54 @@ $('#modeSelect').addEventListener('change',()=>{
 // Generate QRs
 $('#btnGenerate').addEventListener('click', async ()=>{
   let secret="";
+  let secretBytes = null;
+  let compressionInfo = { compressed: false };
   const type=$('#secretType').value;
 
   if(type==="password"){
     secret=$('#passwordField').value.trim();
     if(!secret){ notify("Enter a password or passphrase","error"); return; }
+    secretBytes = strToBytes(secret);
   }
+  
   if(type==="crypto"){
     const words=[];
-    for(let i=1;i<=25;i++){
+    for(let i=1;i<=24;i++){
       const val=$(`#word${i}`).value.trim();
       if(val) words.push(val);
     }
-    secret=words.join(" ");
-    if(!secret){ notify("Enter your words","error"); return; }
+    if(words.length === 0){ notify("Enter your words","error"); return; }
+    
+    secret = words.join(" ");
+    
+    // Try BIP39 compression for smaller payloads, but fallback gracefully
+    try {
+      if(typeof BIP39_ENGLISH !== 'undefined') {
+        const compressed = compressBip39Phrase(secret);
+        secretBytes = compressed.bytes;
+        
+        compressionInfo = {
+          compressed: true,
+          wordCount: compressed.wordCount
+        };
+        
+        notify(`Compressed ${words.length} words from ${secret.length} chars to ${secretBytes.length} bytes`, 'success');
+      } else {
+        throw new Error('BIP39 library not loaded');
+      }
+    } catch (e) {
+      // Graceful fallback to plain text - maintains backwards compatibility
+      console.warn("BIP39 compression failed, using plain text:", e.message);
+      secretBytes = strToBytes(secret);
+      compressionInfo = { compressed: false };
+      notify(`Using plain text encoding (${secretBytes.length} bytes)`, 'info');
+    }
   }
+  
   if(type==="note"){
     secret=$('#noteField').value.trim();
     if(!secret){ notify("Enter some text","error"); return; }
+    secretBytes = strToBytes(secret);
   }
 
   const mode=$('#modeSelect').value;
@@ -222,33 +375,66 @@ $('#btnGenerate').addEventListener('click', async ()=>{
 
       // If Shamir 2/2 → use XOR
       if(n===2 && k===2){
-        await runXOR(secret, type);
+        await runXOR(secretBytes, type, secret, compressionInfo);
         return;
       }
 
       secrets.init(8);
-      const secretHex=bytesToHex(strToBytes(secret));
+      const secretHex=bytesToHex(secretBytes);
       const rawShares=secrets.share(secretHex,n,k);
       const id=randId();
-      const envelopes=rawShares.map((s,i)=>({t:'s',c:type,n,k,i:i+1,id,d:s}));
+      const envelopes=rawShares.map((s,i)=>({
+        t:'s',
+        c:type,
+        n,
+        k,
+        i:i+1,
+        id,
+        d:s,
+        // Optimized compression metadata for crypto types
+        ...(type === 'crypto' && compressionInfo.compressed ? {
+          wc: compressionInfo.wordCount
+        } : {})
+      }));
       await renderShares(envelopes, secret, false);
       notify('Shamir QR codes created','success');
       $('#bmac-block').style.display = "block";
     } else {
-      await runXOR(secret, type);
+      await runXOR(secretBytes, type, secret, compressionInfo);
     }
   }catch(e){ notify('Something went wrong: ' + (e?.message||e),'error'); }
 });
 
-async function runXOR(secret, type){
-  const S=strToBytes(secret);
+async function runXOR(secretBytes, type, originalSecret, compressionInfo = { compressed: false }){
+  const S = secretBytes;
   const R=new Uint8Array(S.length); crypto.getRandomValues(R);
   const B=new Uint8Array(S.length); for(let i=0;i<S.length;i++) B[i]=S[i]^R[i];
   const id=randId();
   await renderShares([
-    {t:'x',c:type,i:1,id,d:b64uFromBytes(R)},
-    {t:'x',c:type,i:2,id,d:b64uFromBytes(B)}
-  ], secret, true);
+    {
+      t:'x',
+      c:type,
+      i:1,
+      id,
+      d:b64uFromBytes(R),
+      // Optimized compression metadata for crypto types
+      ...(type === 'crypto' && compressionInfo.compressed ? {
+        wc: compressionInfo.wordCount
+      } : {})
+    },
+    {
+      t:'x',
+      c:type,
+      i:2,
+      id,
+      d:b64uFromBytes(B),
+      // Optimized compression metadata for crypto types
+      ...(type === 'crypto' && compressionInfo.compressed ? {
+        comp: compressionInfo.language,
+        wc: compressionInfo.wordCount
+      } : {})
+    }
+  ], originalSecret, true);
   notify('XOR QR codes created','success');
   $('#bmac-block').style.display = "block";
 }
@@ -257,16 +443,25 @@ async function runXOR(secret, type){
 async function renderShares(envelopes, secret, isXor){
   const tmpl=$('#shareCardTmpl');
   const grid=$('#sharesGrid');
-  const payloadLength = secret.length;
-  let qrSize = 250;
-  if(payloadLength>200 && payloadLength<=400) qrSize=300;
-  if(payloadLength>400) qrSize=350;
+  
+  // Calculate QR size based on payload size (not original secret length)
+  const avgPayloadLength = JSON.stringify(envelopes[0]).length;
+  let qrSize = 200;
+  if(avgPayloadLength > 150) qrSize = 250;
+  if(avgPayloadLength > 300) qrSize = 300;
+  if(avgPayloadLength > 500) qrSize = 350;
 
   for(let i=0;i<envelopes.length;i++){
     const env=envelopes[i];
     const node=tmpl.content.firstElementChild.cloneNode(true);
     node.querySelector('.label').textContent = `Share ${String.fromCharCode(65+i)} (#${env.i})`;
     const payload=JSON.stringify(env);
+
+    // Show payload size info
+    const sizeInfo = document.createElement('div');
+    sizeInfo.className = 'text-xs text-gray-500 mb-2';
+    sizeInfo.textContent = `Payload size: ${payload.length} chars`;
+    node.querySelector('.label').after(sizeInfo);
 
     // Render QR code
     const qrContainer=node.querySelector('.qr'); qrContainer.innerHTML='';
@@ -304,7 +499,7 @@ async function renderShares(envelopes, secret, isXor){
     });
 
     // Extra block only for XOR part 2
-    if(isXor && env.i === 2){
+    if(isXor && i === 1){
       const url=`${location.origin}/combine.html#${encodeURIComponent(payload)}`;
       const msg = `Here is a special link: this is one of the two codes that together form your secret.\n\nYou will receive the other part as a QR code (for example via email).\n\nOpen the link in your browser to combine the codes:\n${url}`;
 
@@ -341,7 +536,6 @@ async function renderShares(envelopes, secret, isXor){
       node.appendChild(box);
     }
 
-    
     // Extra handlers for new buttons
     node.querySelector('.dl3mfBtn').addEventListener('click', async()=>{
       const canvas = qrContainer.querySelector('canvas');
@@ -370,7 +564,101 @@ async function renderShares(envelopes, secret, isXor){
 window.addEventListener('load', ()=>{
   const isShamir = ($('#modeSelect').value==='shamir');
   const nk = $('#nkHelp'); if(nk) nk.style.display = isShamir ? 'block' : 'none';
+  
+  // Add real-time BIP39 validation with auto-completion
+  setupBip39Validation();
 });
+
+// Enhanced BIP39 word validation with real-time auto-completion
+function setupBip39Validation() {
+  const wordInputs = document.querySelectorAll('.word-input');
+  
+  // Only setup validation if BIP39_ENGLISH is available
+  if(typeof BIP39_ENGLISH === 'undefined') {
+    console.warn('BIP39_ENGLISH not loaded, skipping validation');
+    return;
+  }
+  
+  wordInputs.forEach(input => {
+    let autoCompleteTimeout;
+    
+    input.addEventListener('input', function(e) {
+      const value = e.target.value.toLowerCase().trim();
+      
+      // Clear any existing timeout
+      clearTimeout(autoCompleteTimeout);
+      
+      if (!value) {
+        // Empty input - reset styling
+        e.target.className = e.target.className.replace(/border-red-300|border-green-300/g, '') + ' border-gray-300';
+        e.target.title = '';
+        return;
+      }
+      
+      // Check if word exists in BIP39 list
+      const result = detectLanguageAndFindWord(value);
+      
+      if (result) {
+        // Valid BIP39 word or valid prefix
+        e.target.className = e.target.className.replace(/border-red-300|border-gray-300/g, '') + ' border-green-300';
+        e.target.title = `Valid: "${result.word}"`;
+        
+        // Auto-complete after a short delay if it's a unique prefix
+        if (result.word !== value && result.word.startsWith(value)) {
+          autoCompleteTimeout = setTimeout(() => {
+            if (e.target.value.toLowerCase().trim() === value) {
+              const cursorPosition = value.length;
+              e.target.value = result.word;
+              e.target.setSelectionRange(cursorPosition, result.word.length);
+            }
+          }, 500); // 0.5 second delay for auto-completion
+        }
+      } else {
+        // Invalid word
+        e.target.className = e.target.className.replace(/border-green-300|border-gray-300/g, '') + ' border-red-300';
+        e.target.title = `Not found in BIP39 wordlist`;
+      }
+    });
+    
+    // Handle tab/enter/space to accept auto-completion and move to next field
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ') {
+        const value = e.target.value.toLowerCase().trim();
+        const result = detectLanguageAndFindWord(value);
+        
+        if (result && result.word !== value && result.word.startsWith(value)) {
+          e.target.value = result.word;
+          e.target.className = e.target.className.replace(/border-red-300|border-gray-300/g, '') + ' border-green-300';
+        }
+        
+        // Move to next field on Enter or Space (but not Tab - browser handles that)
+        if ((e.key === 'Enter' || e.key === ' ') && !e.shiftKey) {
+          e.preventDefault();
+          const currentIndex = parseInt(e.target.dataset.wordIndex);
+          if (currentIndex < 24) {
+            const nextInput = document.querySelector(`#word${currentIndex + 1}`);
+            if (nextInput) {
+              nextInput.focus();
+            }
+          }
+        }
+      }
+    });
+    
+    input.addEventListener('blur', function(e) {
+      clearTimeout(autoCompleteTimeout);
+      const value = e.target.value.toLowerCase().trim();
+      if (!value) return;
+      
+      const result = detectLanguageAndFindWord(value);
+      if (result && result.word !== value) {
+        // Auto-complete to full word if it's a valid prefix
+        e.target.value = result.word;
+        e.target.className = e.target.className.replace(/border-red-300|border-gray-300/g, '') + ' border-green-300';
+      }
+    });
+  });
+}
 </script>
 </body>
 </html>

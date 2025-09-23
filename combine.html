@@ -8,8 +8,7 @@
 <link href="apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="lib/tailwind.min.css" rel="stylesheet"/>
 <script src="lib/secrets.min.js"></script>
-<script>
-</script>
+<script src="lib/bip39-english.js"></script>
 
 <style>
   /* Scanner sizing fix for desktop browsers */
@@ -89,6 +88,43 @@
 <script src="lib/html5-qrcode.min.js"></script>
 <script src="lib/jsqr.min.js"></script>
 <script>
+/* ---------- BIP39 helper (English only) ---------- */
+const BIP39_LANGUAGES = {
+  english: BIP39_ENGLISH
+};
+
+function indexToWord(index, wordlist) {
+  return wordlist[index] || null;
+}
+
+// Decompress BIP39 indices back to phrase (English only)
+function decompressBip39Phrase(bytes, wordCount = null) {
+  const wordlist = BIP39_LANGUAGES.english;
+  
+  // Convert bytes to bit string
+  let bitString = '';
+  for (const byte of bytes) {
+    bitString += byte.toString(2).padStart(8, '0');
+  }
+  
+  // Extract 11-bit indices
+  const indices = [];
+  const maxIndices = wordCount || Math.floor(bitString.length / 11);
+  
+  for (let i = 0; i < bitString.length - 10 && indices.length < maxIndices; i += 11) {
+    const indexBits = bitString.substr(i, 11);
+    const index = parseInt(indexBits, 2);
+    if (index < wordlist.length) indices.push(index);
+  }
+  
+  return indices.map(i => indexToWord(i, wordlist)).filter(Boolean).join(' ');
+}
+
+function isCompressedBip39Data(firstShare, bytes){
+  // Treat as compressed if share is crypto and word count metadata is present
+  return firstShare && firstShare.c === 'crypto' && firstShare.wc;
+}
+
 /* ---------- Audio unlock & feedback (beep + vibration) ---------- */
 (function(){
   function unlock(){
@@ -197,14 +233,15 @@ function handleScannedPayload(text){
         const k0 = Number(cur.k || 0);
         const k1 = Number(env.k || 0);
         if (k0 && k1 && k0 !== k1) {
-          const msg = ``+`Threshold (k) differs: received ${k1}, current ${k0}.`;
+          const msg = `Threshold (k) differs: received ${k1}, current ${k0}.`;
           showStatus(msg, "error");
           return;
         }
       }
     }
-shares.push(env);
-    updateProgress(); // update progress
+    
+    shares.push(env);
+    updateProgress();
     if(env.c){ secretCategory = env.c; }
     const div=document.createElement('div');
     div.textContent = `Part ${env.i} received (id ${env.id})`;
@@ -233,6 +270,20 @@ function tryRestore(){
       if (R.length !== B.length) { showStatus('XOR parts length mismatch', 'error'); return; }
       const S = new Uint8Array(R.length);
       for(let i=0;i<R.length;i++) S[i]=R[i]^B[i];
+      
+      // Handle crypto category with BIP39 decompression
+      const firstShare = shares[0];
+      if (secretCategory === 'crypto' && isCompressedBip39Data(firstShare, S)) {
+        try {
+          const wordCount = firstShare.wc || null;
+          const decompressedSecret = decompressBip39Phrase(S, wordCount);
+          showSecret(decompressedSecret);
+          return;
+        } catch (e) {
+          console.warn('BIP39 decompression failed, falling back to plain text:', e);
+        }
+      }
+      
       showSecret(new TextDecoder().decode(S));
     }
   }
@@ -241,6 +292,20 @@ function tryRestore(){
       const parts = shares.map(s=>s.d);
       const secretHex = secrets.combine(parts);
       const bytes = new Uint8Array(secretHex.match(/.{1,2}/g).map(b=>parseInt(b,16)));
+      
+      // Handle crypto category with BIP39 decompression  
+      const firstShare = shares[0];
+      if (secretCategory === 'crypto' && isCompressedBip39Data(firstShare, bytes)) {
+        try {
+          const wordCount = firstShare.wc || null;
+          const decompressedSecret = decompressBip39Phrase(bytes, wordCount);
+          showSecret(decompressedSecret);
+          return;
+        } catch (e) {
+          console.warn('BIP39 decompression failed, falling back to plain text:', e);
+        }
+      }
+      
       showSecret(new TextDecoder().decode(bytes));
     }
   }
@@ -286,11 +351,15 @@ document.querySelector("#copyBtn").addEventListener("click", async ()=>{
     await navigator.clipboard.writeText(textToCopy);
     showStatus("Secret copied","success");
     feedbackSuccess();
-  } catch {}
+  } catch {
+    showStatus("Could not copy","error");
+  }
 });
+
 function doReset(){
-shares=[];
-  updateProgress(); // reset progress
+  shares=[];
+  secretCategory = null;
+  updateProgress();
   document.querySelector("#foundShares").innerHTML="";
   document.querySelector("#resultaat").classList.add("hidden");
   document.querySelector("#bmac-block").style.display="none";
@@ -299,6 +368,7 @@ shares=[];
 document.querySelector("#resetBtn").addEventListener("click", doReset);
 const resetBtnTop = document.querySelector("#resetBtnTop");
 if (resetBtnTop) resetBtnTop.addEventListener("click", doReset);
+
 // Start QR scanner (responsive qrbox + fixed aspect ratio)
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const qrbox = (vw, vh) => {
