@@ -62,7 +62,7 @@ No toolchain required. Clone/download and open the HTML files directly, or serve
 
 ## 📜 License  
 This project is licensed under the **QR SafeShare License (Non-Commercial)**.  
-See [LICENSE](./LICENSE) for full details.  
+See [LICENSE](./LICENSE.md) for full details.  
 
 ⚠️ Important:  
 - Free for personal, educational, and research use.  
