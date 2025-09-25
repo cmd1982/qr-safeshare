@@ -3,271 +3,201 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Title & favicon -->
   <title>QR SafeShare – Secure secrets with QR codes</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <!-- Styles -->
   <link rel="stylesheet" href="lib/tailwind.min.css">
-  <meta name="description" content="QR SafeShare lets you split passwords, recovery phrases, or notes into multiple QR codes using XOR or Shamir’s Secret Sharing. Everything runs locally and can be 3D-printed as 3MF.">
+
+  <!-- SEO -->
+  <meta name="description" content="QR SafeShare lets you securely split and recover passwords, recovery phrases, or notes into multiple QR codes. 100% offline, open source, and durable with 3D-print support.">
+
+  <!-- Open Graph (Facebook, LinkedIn, Discord) -->
+  <meta property="og:title" content="QR SafeShare – Secure secrets with QR codes">
+  <meta property="og:description" content="Split and combine secrets with QR codes. Everything runs locally in your browser – no servers, no tracking.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://qr.area404.nl/help.html">
+  <meta property="og:image" content="logo.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QR SafeShare – Secure secrets with QR codes">
+  <meta name="twitter:description" content="Securely split and combine secrets with QR codes. 100% offline and open source.">
+  <meta name="twitter:image" content="logo.png">
 </head>
+
 <body class="bg-gray-50 font-sans text-gray-900 leading-relaxed">
 <div class="max-w-4xl mx-auto p-6 space-y-6">
+<!-- Header -->
 <header class="mb-6 text-center flex flex-col items-center gap-2">
-  <a class="flex flex-col items-center hover:opacity-80" href="/">
-    <img alt="QR SafeShare logo" class="w-16 h-16" src="logo.svg"/>
-    <span class="text-3xl font-bold text-teal-700">QR SafeShare</span>
-  </a>
-  <p class="text-gray-600">Securely split and combine secrets with QR codes</p>
+<a class="flex flex-col items-center hover:opacity-80" href="index.html">
+<img alt="QR SafeShare logo" class="w-16 h-16" src="logo.svg"/>
+<span class="text-3xl font-bold text-teal-700">QR SafeShare</span>
+</a>
+<p class="text-gray-600">Securely split and combine secrets with QR codes</p>
 </header>
-
-<!-- Table of contents -->
+<!-- Intro -->
 <section class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">Table of contents</h2>
-  <ul class="list-disc ml-5 space-y-1 text-teal-700 underline">
-    <li><a href="#what">What is QR SafeShare?</a></li>
-    <li><a href="#features">Key features</a></li>
-    <li><a href="#usecases">Use cases</a></li>
-    <li><a href="#split">How does splitting work?</a></li>
-    <li><a href="#combine">How does combining work?</a></li>
-    <li><a href="#3d">3D-printable QR codes</a></li>
-    <li><a href="#sleeve">Protective Sleeve</a></li>
-    <li><a href="#pwa">Install as an App (PWA)</a></li>
-    <li><a href="#technical">For the technically inclined</a></li>
-    <li><a href="#faq">FAQ</a></li>
-  </ul>
+<h2 class="text-xl font-semibold mb-2">What is QR SafeShare?</h2>
+<p>
+  QR SafeShare is a tool to split a password, recovery phrase, or any text 
+  into multiple QR codes using <strong>mathematical techniques</strong> (XOR and Shamir’s Secret Sharing).
+  A single share has no value; only by combining the right shares
+  is the original secret reconstructed.
+  Everything happens fully locally in your browser – nothing is stored online.
+</p>
 </section>
-
-<section id="what" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">What is QR SafeShare?</h2>
-  <p>
-    QR SafeShare is a free and open source tool to split a password, recovery phrase, or any text
-    into multiple QR codes using <strong>mathematical techniques</strong> (XOR and Shamir’s Secret Sharing).
-    A single share has no value; only by combining the right shares is the original secret reconstructed.
-    Everything happens fully locally in your browser — nothing is sent or stored online.
-  </p>
+<!-- Features -->
+<section class="bg-white rounded-xl shadow p-6">
+<h2 class="text-xl font-semibold mb-2">Key features</h2>
+<ul class="list-disc ml-5 space-y-2">
+  <li><strong>Split secrets into QR codes:</strong> works with passwords, recovery phrases, or any text.</li>
+  <li><strong>Recover easily:</strong> scan or upload the required QR codes to restore the original secret.</li>
+  <li><strong>Runs locally:</strong> all encryption and splitting happens in your browser. Nothing is sent or stored online.</li>
+  <li><strong>3D-print export:</strong> create durable, physical backups of your QR codes with 3MF files.</li>
+  <li><strong>Extra protection:</strong> use the lockable QR SafeShare Sleeve (available on Printables) to prevent unwanted scanning.</li>
+</ul>
 </section>
-
-<section id="features" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">Key features</h2>
-  <ul class="list-disc ml-5 space-y-2">
-    <li><strong>Split secrets into QR codes:</strong> works with passwords, recovery phrases, or any text.</li>
-    <li><strong>Recover easily:</strong> scan or upload the required QR codes to restore the original secret.</li>
-    <li><strong>Runs locally:</strong> all encryption and splitting happens in your browser. Nothing is sent or stored online.</li>
-    <li><strong>3D-print export:</strong> create durable, physical backups of your QR codes with 3MF files.</li>
-    <li><strong>Extra protection:</strong> use the lockable QR SafeShare Sleeve (available on Printables) to prevent unwanted scanning.</li>
-  </ul>
+<!-- Split -->
+<section class="bg-white rounded-xl shadow p-6">
+<h2 class="text-xl font-semibold mb-2">How does splitting work?</h2>
+<p class="mb-3">
+  You enter your secret (for example a password or recovery phrase).
+  The tool uses <strong>mathematical calculations</strong> to create multiple shares.
+  Each share is shown as a QR code and can be stored or shared separately.
+</p>
+<div class="flex justify-center">
+<figure class="text-center">
+  <img alt="Illustration: split a secret into multiple QR shares" class="mx-auto w-32 sm:w-40 md:w-48 lg:w-56 h-auto" decoding="async" loading="lazy" src="images/split.png" style="max-width:260px;height:auto;margin-left:auto;margin-right:auto;display:block;"/>
+  <figcaption class="text-sm text-gray-600 mt-2">Splitting: each share has no value by itself.</figcaption>
+</figure>
+</div>
 </section>
-
-<section id="usecases" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">Use cases</h2>
-  <p class="mb-4">Here are some practical scenarios where QR SafeShare makes sense:</p>
-
-  <h3 class="font-semibold mt-4 mb-2">1. Protecting a crypto recovery phrase</h3>
-  <p>
-    Recovery phrases are extremely sensitive. A CryptoSteel is durable, but if a burglar finds it, they have your entire phrase.
-    Digital backups can be corrupted or hacked. Splitting a metal backup in two also isn’t secure, since each half exposes part of your phrase and you no longer know the whole thing yourself.
-  </p>
-  <p class="mt-2">
-    With QR SafeShare you can use <strong>Shamir’s Secret Sharing (3-2)</strong> to create three QR codes where any two are enough to recover your phrase.
-    Export them as <strong>3MF files</strong> to 3D-print durable offline backups. Store one in a safe, one digitally, and one with a trusted person.
-    Even if one code is lost or stolen, your funds remain secure. A single QR is useless on its own, even against future quantum computers.
-  </p>
-
-  <h3 class="font-semibold mt-6 mb-2">2. Sending a password securely to a client</h3>
-  <p>
-    Sending a password over a single channel like email is risky. If intercepted, the secret is exposed.
-    With <strong>XOR 2-2 splitting</strong> you divide the password into two QR codes. Each part on its own is useless.
-  </p>
-  <p class="mt-2">
-    You can send one part via <strong>WhatsApp or SMS</strong> as a special link that opens the Combine page with the first QR preloaded.
-    The second QR is sent as an image by email. When your client opens the link and scans the second QR, the password is reconstructed locally in their browser.
-    If one channel is compromised, nothing is revealed.
-  </p>
-
-  <h3 class="font-semibold mt-6 mb-2">3. Dead man’s switch for a password vault</h3>
-  <p>
-    A <strong>dead man’s switch</strong> is a system that checks if you are still alive or active. It sends you periodic messages, and if you stop responding it automatically triggers an action, such as sending an email.
-  </p>
-  <p class="mt-2">
-    If you simply email a password, it can sit unprotected in someone’s inbox and be intercepted. That creates a single point of failure.
-  </p>
-  <p class="mt-2">
-    With <strong>XOR 2-2</strong>, you split the vault password in two parts. One QR code is stored on a USB stick together with the vault.
-    The dead man’s switch sends the second part as a special link to a family member who should receive access to the vault.
-    Only by combining the USB QR and the emailed link locally in the browser can the password be reconstructed.
-    A hacker with the email or a burglar with the USB alone gains nothing.
-  </p>
+<!-- Combine -->
+<section class="bg-white rounded-xl shadow p-6">
+<h2 class="text-xl font-semibold mb-2">How does combining work?</h2>
+<p class="mb-3">
+  Use your camera or upload to scan the QR codes.
+  As soon as enough shares are present, the original secret is reconstructed automatically.
+  Reconstruction happens fully locally in the browser.
+</p>
+<div class="flex justify-center">
+<figure class="text-center">
+  <img alt="Illustration: scan shares and recover the secret" class="mx-auto w-32 sm:w-40 md:w-48 lg:w-56 h-auto" decoding="async" loading="lazy" src="images/combine.png" style="max-width:260px;height:auto;margin-left:auto;margin-right:auto;display:block;"/>
+  <figcaption class="text-sm text-gray-600 mt-2">Combining: once enough shares are scanned, the secret is restored automatically.</figcaption>
+</figure>
+</div>
 </section>
-
-<section id="split" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">How does splitting work?</h2>
-  <p class="mb-3">
-    You enter your secret (for example a password or recovery phrase).
-    The tool uses <strong>mathematical calculations</strong> to create multiple shares.
-    Each share is shown as a QR code and can be stored or shared separately.
-  </p>
-  <img src="images/split.png" alt="Splitting secret into QR codes" class="mx-auto mt-4 w-32 sm:w-40 md:w-48 lg:w-56" style="max-width: 100%; height: auto;">
+<!-- 3D print -->
+<section class="bg-white rounded-xl shadow p-6">
+<h2 class="text-xl font-semibold mb-2">3D-printable QR codes</h2>
+<p>
+With QR SafeShare you can not only store your secret QR codes digitally, 
+but also export them as a <strong>3MF file</strong>. 
+This format is directly supported by most 3D printers and lets you create a 
+durable, physical backup of your secret.
+</p>
+<p>
+Why is this useful? 
+Paper can tear, fade, or burn. 
+Digital storage can be hacked, corrupted, or lost. 
+A 3D-printed QR is durable, tangible, and completely offline – 
+a secure backup you can actually hold in your hands.
+</p>
+<p>
+Tip: in your slicer, add a <strong>color change just above 2 mm</strong>. 
+Print the base in white and the top in black (or another dark color) 
+to ensure the QR code remains scannable.
+</p>
 </section>
-
-<section id="combine" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">How does combining work?</h2>
-  <p class="mb-3">
-    Use your camera or upload to scan the QR codes.
-    As soon as enough shares are present, the original secret is reconstructed automatically.
-    Reconstruction happens fully locally in the browser.
-  </p>
-  <img src="images/combine.png" alt="Combining QR codes to unlock secret" class="mx-auto mt-4 w-32 sm:w-40 md:w-48 lg:w-56" style="max-width: 100%; height: auto;">
-</section>
-
-<section id="3d" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">3D-printable QR codes</h2>
-  <p>
-    With QR SafeShare you can not only store your secret QR codes digitally,
-    but also export them as a <strong>3MF file</strong>.
-    This format is directly supported by most 3D printers and lets you create a
-    durable, physical backup of your secret.
-  </p>
-  <p>
-    Why is this useful?
-    Paper can tear, fade, or burn.
-    Digital storage can be hacked, corrupted, or lost.
-    A 3D-printed QR is durable, tangible, and completely offline —
-    a secure backup you can actually hold in your hands.
-  </p>
-</section>
-
-<section id="sleeve" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-bold mt-8 mb-2">Protective Sleeve</h2>
-  <p>
-    Want to prevent someone from scanning your printed QR code without permission?
-    Use the <strong>QR SafeShare Sleeve</strong>. Slide the QR code inside and secure it with a padlock.
-    With the lock in place, the QR cannot be removed or scanned.
-  </p>
-  <p class="mt-4">
-    👉 <a href="https://www.printables.com/model/1419250-qr-safeshare-split-and-protect-secrets-in-qr-codes"
-          target="_blank" class="text-teal-700 font-semibold underline">
-          Download the lockable QR SafeShare Sleeve on Printables
-    </a>
-  </p>
-</section>
-
-<section id="pwa" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">Install as an App (PWA)</h2>
-  <p>
-    QR SafeShare can also be installed as a <strong>Progressive Web App (PWA)</strong> for quick access, just like a native app.
-    Once installed, it runs fullscreen and can be used completely offline.
-  </p>
-  <ul class="list-disc ml-5 mt-2 space-y-1">
-    <li><strong>On Android (Chrome / Edge / Brave):</strong> open
-      <a href="https://qrsafeshare.com" class="underline text-teal-700">qrsafeshare.com</a>,
-      tap the ⋮ menu, and choose “Add to Home screen”.</li>
-    <li><strong>On iOS (Safari):</strong> open
-      <a href="https://qrsafeshare.com" class="underline text-teal-700">qrsafeshare.com</a>,
-      tap the Share button, and select “Add to Home Screen”.</li>
-    <li><strong>On Desktop (Chrome / Edge / Brave):</strong> open
-      <a href="https://qrsafeshare.com" class="underline text-teal-700">qrsafeshare.com</a>,
-      click the install icon in the address bar or go to ⋮ → Install app.</li>
-  </ul>
-</section>
-
-<section id="technical" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-semibold mb-2">For the technically inclined</h2>
-  <p>QR SafeShare supports two mathematical methods:</p>
-  <ul class="list-disc ml-5 space-y-1">
-    <li><strong>XOR:</strong> the secret is combined with random data. A single share contains no information. Two shares are required to get the secret back.</li>
-    <li><strong>Shamir’s Secret Sharing:</strong> a well-known cryptographic method where the secret is embedded in a polynomial. You can configure how many shares are required to reconstruct the secret.</li>
-  </ul>
-  <p class="mt-2">
-    Both methods are <strong>mathematically secure</strong> as long as you follow the rules.
-    Everything runs client-side in your browser with JavaScript.
-  </p>
-  <img src="images/shamir.png" alt="Shamir Secret Sharing example" class="mx-auto mt-4 w-64 sm:w-80 md:w-96 lg:w-[28rem]" style="max-width: 100%; height: auto;">
-</section>
-
-<section id="faq" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-bold mt-8 mb-4">Frequently Asked Questions</h2>
-  <div class="space-y-4">
-
-    <div>
-      <h3 class="font-semibold">Can someone do anything with a single QR code?</h3>
-      <p>No. Each QR code on its own is useless. The secret can only be reconstructed when the required number of QR codes is combined. Even with a supercomputer or a future quantum computer, a single part reveals nothing.</p>
-    </div>
-
-    <div>
-      <h3 class="font-semibold">What happens if I lose one of the QR codes?</h3>
-      <p>If you use Shamir’s Secret Sharing, you can create multiple codes (for example 3) but only need a subset (for example 2) to recover the secret. This gives you flexibility and resilience against loss. With XOR 2-2, losing one part means the secret is unrecoverable, so store both parts carefully.</p>
-    </div>
-
-    <div>
-      <h3 class="font-semibold">Is QR SafeShare free?</h3>
-      <p>Yes. It is completely free and open source. All processing happens locally in your browser, with no tracking or data collection. If you find it useful, you can support the project with a coffee. You can also review or self-host the source code on <a href="https://github.com/cmd1982/qr-safeshare" target="_blank" class="underline text-teal-700">GitHub</a>.</p>
-    </div>
-
-    <div>
-      <h3 class="font-semibold">Why 3D-print QR codes instead of using paper?</h3>
-      <p>Paper can burn, fade, or deteriorate over time. A 3D-printed QR code is durable, physical, and offline. It offers a long-term backup option for sensitive information.</p>
-    </div>
-
-    <div>
-      <h3 class="font-semibold">Can I store the QR codes digitally?</h3>
-      <p>Yes, you can. But digital storage (cloud, email, devices) is more vulnerable to hacks or accidental deletion. The advantage of splitting is that a single file is meaningless without the others.</p>
-    </div>
-
-    <div>
-      <h3 class="font-semibold">Is this suitable for crypto recovery phrases?</h3>
-      <p>Yes. QR SafeShare is designed with recovery phrases in mind. You can split your seed phrase into multiple parts and keep them in different locations, ensuring safety even if one part is lost or stolen.</p>
-    </div>
-
-    <div>
-      <h3 class="font-semibold">Can I use QR SafeShare offline?</h3>
-      <p>
-        Yes. The tool runs entirely in your browser and does not require an internet connection after loading.
-        You can even self-host it from the GitHub source if desired.
-      </p>
-      <p class="mt-2">
-        QR SafeShare can also be installed as a <strong>Progressive Web App (PWA)</strong> for quick access, just like a native app:
-      </p>
-      <ul class="list-disc ml-5 mt-2 space-y-1">
-        <li><strong>On Android (Chrome / Edge / Brave):</strong> open <a href="https://qrsafeshare.com" class="underline text-teal-700">qrsafeshare.com</a>, tap the ⋮ menu, and choose “Add to Home screen”.</li>
-        <li><strong>On iOS (Safari):</strong> open <a href="https://qrsafeshare.com" class="underline text-teal-700">qrsafeshare.com</a>, tap the Share button, and select “Add to Home Screen”.</li>
-        <li><strong>On Desktop (Chrome / Edge / Brave):</strong> open <a href="https://qrsafeshare.com" class="underline text-teal-700">qrsafeshare.com</a>, click the install icon in the address bar or go to ⋮ → Install app.</li>
-      </ul>
-      <p class="mt-2">
-        👉 Once installed, QR SafeShare runs fullscreen and can also be used completely offline, since all features run locally in your browser.
-      </p>
-    </div>
-
-    <div>
-      <h3 class="font-semibold">Does QR SafeShare support splitting files?</h3>
-      <p>
-        No. QR SafeShare only works with text (passwords, recovery phrases, notes).
-        If you try to split a file, the QR codes would become extremely large and unreadable, which makes this approach impractical.
-      </p>
-    </div>
-
-  </div>
-</section>
-
-<section class="bg-white rounded-xl shadow p-6 text-center">
-  <p class="text-gray-700 text-base mb-2">
-    ☕ Do you find QR SafeShare useful?<br/>
-    Support the project with a coffee:
-  </p>
-  <a aria-label="Support QR SafeShare on Buy Me a Coffee" href="https://buymeacoffee.com/qrsafeshare" rel="noopener" target="_blank">
-    <img alt="Buy Me a Coffee" class="mx-auto" src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" style="height: 45px;"/>
+<!-- Sleeve -->
+<section class="bg-white rounded-xl shadow p-6">
+<h2 class="text-xl font-bold mt-8 mb-2">Protective Sleeve</h2>
+<p>
+  Want to prevent someone from scanning your printed QR code without permission?  
+  Use the <strong>QR SafeShare Sleeve</strong>. Slide the QR code inside and secure it with a padlock.  
+  With the lock in place, the QR cannot be removed or scanned.
+<p class="mt-4">
+  👉 <a href="https://www.printables.com/model/1419250-qr-safeshare-split-and-protect-secrets-in-qr-codes" 
+        target="_blank" class="text-teal-700 font-semibold underline">
+        Download the lockable QR SafeShare Sleeve on Printables
   </a>
+</p>
 </section>
+<!-- For techies -->
+<section class="bg-white rounded-xl shadow p-6">
+<h2 class="text-xl font-semibold mb-2">For the technically inclined</h2>
+<p>QR SafeShare supports two mathematical methods:</p>
+<ul class="list-disc ml-5 space-y-1">
+<li><strong>XOR:</strong> the secret is combined with random data. A single share contains no information. Two shares are required to get the secret back.</li>
+<li><strong>Shamir’s Secret Sharing:</strong> a well-known cryptographic method where the secret is embedded in a polynomial. You can configure how many shares are required to reconstruct the secret.</li>
+</ul>
+<p class="mt-2">
+  Both methods are <strong>mathematically secure</strong> as long as you follow the rules.
+  Everything runs client-side in your browser with JavaScript.
+</p>
+<div class="flex justify-center mt-4">
+<figure class="text-center">
+  <img alt="Illustration: Shamir 3/5 secret sharing with shares A–E" class="mx-auto w-640 sm:w-80 md:w-96 lg:w-[28rem] h-auto" decoding="async" loading="lazy" src="images/shamir.png" style="max-width:340px;height:auto;margin-left:auto;margin-right:auto;display:block;"/>
+  <figcaption class="text-sm text-gray-600 mt-2">Shamir’s Secret Sharing: at least 3 out of 5 shares required.</figcaption>
+</figure>
+</div>
+</section>
+<!-- FAQ -->
+<section class="bg-white rounded-xl shadow p-6">
+<h2 class="text-xl font-bold mt-8 mb-4">Frequently Asked Questions</h2>
+<div class="space-y-4">
+
+  <div>
+    <h3 class="font-semibold">Can someone do anything with a single QR code?</h3>
+    <p>No. Each QR code on its own is useless. The secret can only be reconstructed when the required number of QR codes is combined. Even with a supercomputer or a future quantum computer, a single part reveals nothing.</p>
+  </div>
+
+  <div>
+    <h3 class="font-semibold">What happens if I lose one of the QR codes?</h3>
+    <p>If you use Shamir’s Secret Sharing, you can create multiple codes (for example 3) but only need a subset (for example 2) to recover the secret. This gives you flexibility and resilience against loss.</p>
+  </div>
+
+  <div>
+    <h3 class="font-semibold">Is QR SafeShare free?</h3>
+    <p>Yes. It is completely free and open source. All processing happens locally in your browser, with no tracking or data collection. If you find it useful, you can support the project with a coffee.</p>
+  </div>
+
+  <div>
+    <h3 class="font-semibold">Why 3D-print QR codes instead of using paper?</h3>
+    <p>Paper can burn, fade, or deteriorate over time. A 3D-printed QR code is durable, physical, and offline. It offers a long-term backup option for sensitive information.</p>
+  </div>
+
+  <div>
+    <h3 class="font-semibold">Can I store the QR codes digitally?</h3>
+    <p>Yes, you can. But digital storage (cloud, email, devices) is more vulnerable to hacks or accidental deletion. The advantage of splitting is that a single file is meaningless without the others.</p>
+  </div>
+
+  <div>
+    <h3 class="font-semibold">Is this suitable for crypto recovery phrases?</h3>
+    <p>Yes. QR SafeShare is designed with recovery phrases in mind. You can split your seed phrase into multiple parts and keep them in different locations, ensuring safety even if one part is lost or stolen.</p>
+  </div>
 
 </div>
-
+</section>
+<!-- Donate -->
+<section class="bg-white rounded-xl shadow p-6 text-center">
+<p class="text-gray-700 text-base mb-2">
+  ☕ Do you find QR SafeShare useful?<br/>
+  Support the project with a coffee:
+</p>
+<a aria-label="Support QR SafeShare on Buy Me a Coffee" href="https://buymeacoffee.com/qrsafeshare" rel="noopener" target="_blank">
+<img alt="Buy Me a Coffee" class="mx-auto" src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" style="height: 45px;"/>
+</a>
+</section>
+</div>
 <footer class="mt-10 mb-6 text-xs text-gray-500 text-center space-y-1">
-  <p>⚠️ Use at your own risk. You are responsible for your secrets.
+  <p>⚠️ Use at your own risk. You are responsible for your secrets. 
      <a href="disclaimer.html" class="underline text-teal-700">Read more</a>
   </p>
-  <p class="flex justify-center items-center gap-1">
-    <img src="images/github.png" alt="GitHub" class="inline-block w-4 h-4"/>
-    <a href="https://github.com/cmd1982/qr-safeshare" target="_blank" class="underline text-teal-700">Open source on GitHub</a>
-  </p>
 </footer>
-
 </body>
 </html>
