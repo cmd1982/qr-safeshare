@@ -27,25 +27,25 @@ This allows you to share a password securely across **two separate channels** (e
 - **Flexible sharing**: generate secure links for 2-part secrets across multiple channels.
 
 ## 🚀 Live demo
-Project is available at [https://qrsafeshare.com/](https://qrsafeshare.com).
+Project is available at [https://qrsafeshare.com](https://qrsafeshare.com).
 
 ## 📱 Use as an App (PWA)  
 
 QR SafeShare can also be installed as a **Progressive Web App (PWA)** for quick access, just like a native app.  
 
 ### On Android (Chrome / Edge / Brave)  
-1. Open [https://qrsafeshare.com/](https://qrsafeshare.com) in your browser.  
+1. Open [https://qrsafeshare.com](https://qrsafeshare.com) in your browser.  
 2. Tap the ⋮ menu and choose **“Add to Home screen”**.  
 3. The app will now appear on your home screen and can run fullscreen.  
 
 ### On iOS (Safari)  
-1. Open [https://qrsafeshare.com/](https://qrsafeshare.com) in Safari.  
+1. Open [https://qrsafeshare.com](https://qrsafeshare.com) in Safari.  
 2. Tap the **Share** button (square with an arrow).  
 3. Select **“Add to Home Screen”**.  
 4. The app will now be available like a normal app.  
 
 ### On Desktop (Chrome / Edge / Brave)  
-1. Open [https://qrsafeshare.com/](https://qrsafeshare.com) in your browser.  
+1. Open [https://qrsafeshare.com](https://qrsafeshare.com) in your browser.  
 2. Click the **install icon** in the address bar (a little computer with a download arrow).  
    - Alternatively, open the ⋮ menu → **Install app**.  
 3. QR SafeShare will be installed as a standalone application and can be launched directly from your Start menu or applications list.  
