@@ -55,15 +55,6 @@ Once installed, QR SafeShare runs fullscreen and can also be used completely off
 
 ---
 
-## 💻 Local Use
-
-You can also run QR SafeShare locally:  
-1. Clone this repository.  
-2. Open `index.html` in your browser.  
-Everything will work offline without any server.
-
----
-
 ## 🔒 Security
 
 - Each QR code on its own is mathematically worthless.  
@@ -87,7 +78,11 @@ By using QR SafeShare, you agree to these terms.
 
 ## 📜 License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+This project is licensed under the **QR SafeShare License (Non-Commercial)**.  
+You are free to use, copy, modify, and distribute the software for personal, educational, or research purposes.  
+
+Commercial use is **not permitted** without prior written permission from the copyright holder.  
+See [LICENSE.md](LICENSE.md) for full details.
 
 ---
 
