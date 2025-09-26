@@ -6,7 +6,7 @@
   <title>QR SafeShare – Secure secrets with QR codes</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="lib/tailwind.min.css?v=2">
+  <link rel="stylesheet" href="lib/tailwind.min.css?v=3">
   <meta name="description" content="QR SafeShare lets you split passwords, recovery phrases, or notes into multiple QR codes using XOR or Shamir’s Secret Sharing. Everything runs locally and can be 3D-printed as 3MF.">
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 leading-relaxed">
@@ -203,10 +203,10 @@
   <ol class="list-decimal ml-5 mt-2 space-y-1">
     <li>Prepare a text file with your QR payload (for example <code>mytext.txt</code>).</li>
     <li>Generate a QR code and store it as terminal output:
-      <pre class="bg-gray-100 p-2 rounded text-sm">qrencode -t ANSIUTF8 &lt; mytext.txt &gt; qr_payload.txt</pre>
+      <pre class="overflow-x-auto bg-gray-100 p-2 rounded text-sm">qrencode -t ANSIUTF8 &lt; mytext.txt &gt; qr_payload.txt</pre>
     </li>
     <li>Display the QR code in your terminal:
-      <pre class="bg-gray-100 p-2 rounded text-sm">cat qr_payload.txt</pre>
+      <pre class="overflow-x-auto bg-gray-100 p-2 rounded text-sm">cat qr_payload.txt</pre>
     </li>
   </ol>
   <p class="mt-2">
@@ -231,7 +231,7 @@
 
     <div>
       <h3 class="font-semibold">Is QR SafeShare free?</h3>
-      <p>Yes. It is completely free and open source. All processing happens locally in your browser, with no tracking or data collection. If you find it useful, you can support the project through <a href="https://donate.qrsafeshare.com" target="_blank" class="underline">donate.qrsafeshare.com</a>, where you’ll find several donation options..</p>
+      <p>Yes. It is completely free and open source. All processing happens locally in your browser, with no tracking or data collection. If you find it useful, you can support the project through <a href="https://donate.qrsafeshare.com" target="_blank" class="underline">donate.qrsafeshare.com</a>, where you’ll find several donation options.</p>
     </div>
 
     <div>
