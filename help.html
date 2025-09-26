@@ -14,7 +14,7 @@
 <header class="mb-6 text-center flex flex-col items-center gap-2">
   <a class="flex flex-col items-center hover:opacity-80" href="/">
     <img alt="QR SafeShare logo" class="w-16 h-16" src="logo.svg"/>
-    <span class="text-3xl font-bold text-teal-700">QR SafeShare</span>
+    <span class="text-3xl font-semibold text-teal-700">QR SafeShare</span>
   </a>
   <p class="text-gray-600">Securely split and combine secrets with QR codes</p>
 </header>
@@ -32,8 +32,10 @@
     <li><a href="#sleeve">Protective Sleeve</a></li>
     <li><a href="#pwa">Install as an App (PWA)</a></li>
     <li><a href="#technical">For the technically inclined</a></li>
+    <li><a href="#shamir">Shamir’s Secret Sharing explained</a></li>
+    <li><a href="#terminal">Storing QR codes on a Linux server</a></li>
     <li><a href="#faq">FAQ</a></li>
-  </ul>
+</ul>
 </section>
 
 <section id="what" class="bg-white rounded-xl shadow p-6">
@@ -136,7 +138,7 @@
 </section>
 
 <section id="sleeve" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-bold mt-8 mb-2">Protective Sleeve</h2>
+  <h2 class="text-xl font-semibold mb-2">Protective Sleeve</h2>
   <p>
     Want to prevent someone from scanning your printed QR code without permission?
     Use the <strong>QR SafeShare Sleeve</strong>. Slide the QR code inside and secure it with a padlock.
@@ -180,11 +182,41 @@
     Both methods are <strong>mathematically secure</strong> as long as you follow the rules.
     Everything runs client-side in your browser with JavaScript.
   </p>
+</section>
+
+<section id="shamir" class="bg-white rounded-xl shadow p-6">
+  <h2 class="text-xl font-semibold mb-2">Shamir’s Secret Sharing explained</h2>
+  <p>
+    With Shamir’s method, the secret is embedded in a polynomial. 
+    You can configure how many QR codes (shares) are required to reconstruct the secret.
+    This allows flexible schemes such as 2-out-of-3, where you can lose one QR but still recover your backup.
+  </p>
   <img src="images/shamir.png" alt="Shamir Secret Sharing example" class="mx-auto mt-4 w-64 sm:w-80 md:w-96 lg:w-[28rem]" style="max-width: 100%; height: auto;">
 </section>
 
+<section id="terminal" class="bg-white rounded-xl shadow p-6">
+  <h2 class="text-xl font-semibold mb-2">Storing QR codes on a Linux server</h2>
+  <p>
+    On Linux you can use the <code>qrencode</code> tool to generate QR codes directly from a text file. 
+    This allows you to keep your QR code data safely on your own system, without ever relying on an external website or service.
+  </p>
+  <ol class="list-decimal ml-5 mt-2 space-y-1">
+    <li>Prepare a text file with your QR payload (for example <code>mytext.txt</code>).</li>
+    <li>Generate a QR code and store it as terminal output:
+      <pre class="bg-gray-100 p-2 rounded text-sm">qrencode -t ANSIUTF8 &lt; mytext.txt &gt; qr_payload.txt</pre>
+    </li>
+    <li>Display the QR code in your terminal:
+      <pre class="bg-gray-100 p-2 rounded text-sm">cat qr_payload.txt</pre>
+    </li>
+  </ol>
+  <p class="mt-2">
+    This method keeps the entire process on your Linux server, giving you full control over your backups 
+    while ensuring that nothing ever leaves your secure environment.
+  </p>
+</section>
+
 <section id="faq" class="bg-white rounded-xl shadow p-6">
-  <h2 class="text-xl font-bold mt-8 mb-4">Frequently Asked Questions</h2>
+  <h2 class="text-xl font-semibold mb-4">Frequently Asked Questions</h2>
   <div class="space-y-4">
 
     <div>
@@ -199,7 +231,7 @@
 
     <div>
       <h3 class="font-semibold">Is QR SafeShare free?</h3>
-      <p>Yes. It is completely free and open source. All processing happens locally in your browser, with no tracking or data collection. If you find it useful, you can support the project with a coffee. You can also review or self-host the source code on <a href="https://github.com/cmd1982/qr-safeshare" target="_blank" class="underline text-teal-700">GitHub</a>.</p>
+      <p>Yes. It is completely free and open source. All processing happens locally in your browser, with no tracking or data collection. If you find it useful, you can support the project through <a href="https://donate.qrsafeshare.com" target="_blank" class="underline">donate.qrsafeshare.com</a>, where you’ll find several donation options..</p>
     </div>
 
     <div>
