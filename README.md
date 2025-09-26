@@ -86,8 +86,8 @@ See [LICENSE.md](LICENSE.md) for full details.
 
 ---
 
-## ☕ Support the Project
+## 🙌 Support the Project
 
-If you find QR SafeShare useful, you can support it with a coffee:  
-[https://buymeacoffee.com/qrsafeshare](https://buymeacoffee.com/qrsafeshare)
+If you find QR SafeShare useful, please consider supporting development and new features here:  
+[https://donate.qrsafeshare.com/](https://donate.qrsafeshare.com/)
 

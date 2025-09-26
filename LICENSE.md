@@ -11,7 +11,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 2. **Redistribution**
    - Redistributions of the Software, with or without modifications, must include this license and copyright notice in all copies or substantial portions of the Software.
    - Modified versions must clearly state that they are derived from QR SafeShare.
-   - **The original donation link (“Buy me a coffee”) must remain visible and intact in the source code, README, and any user-facing interface. Removing, altering, or hiding this link is not permitted.**
+   - **The original donation link (https://donate.qrsafeshare.com/) must remain visible and intact in the source code, README, and any user-facing interface. Removing, altering, or hiding this link is not permitted.**
 
 3. **No Warranty**
    - The Software is provided “as is,” without warranty of any kind, express or implied.
