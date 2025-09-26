@@ -6,7 +6,7 @@
   <title>QR SafeShare - Split secret</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="lib/tailwind.min.css">
+  <link rel="stylesheet" href="lib/tailwind.min.css?v=2">
   <script src="lib/secrets.min.js"></script>
   <script src="lib/qrcode.min.js"></script>
   <script src="lib/jszip.min.js"></script>
@@ -32,7 +32,7 @@
     <select id="secretType" class="w-full border rounded p-2">
       <option value="password">Password</option>
       <option value="crypto">Crypto recovery phrase</option>
-      <option value="note">Free text</option>
+      <option value="note">Short note</option>
     </select>
 
     <!-- Password input -->
@@ -72,7 +72,7 @@
 
     <!-- Note input -->
     <div id="inputNote" class="hidden mt-3">
-      <label class="block text-sm text-gray-600">Free text</label>
+      <label class="block text-sm text-gray-600">Short note</label>
       <textarea id="noteField" rows="5" class="w-full border rounded p-2"></textarea>
     </div>
   </section>
