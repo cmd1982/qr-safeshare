@@ -345,6 +345,7 @@ function showSecret(txt){
   setTimeout(()=>{ cont.scrollIntoView({behavior:"smooth"}); },300);
   showStatus("✅ Secret reconstructed!","success");
   feedbackSuccess();
+  stopCamera();
 }
 
 // Copy & reset
@@ -364,7 +365,7 @@ document.querySelector("#copyBtn").addEventListener("click", async ()=>{
   }
 });
 
-function doReset(){
+async function doReset(){
   shares=[];
   secretCategory = null;
   updateProgress();
@@ -372,6 +373,15 @@ function doReset(){
   document.querySelector("#resultaat").classList.add("hidden");
   document.querySelector("#bmac-block").style.display="none";
   showStatus("Reset successful","info");
+
+  // camera herstarten, ook na file upload
+  try { await qr.stop(); } catch(e) {}
+  try {
+    qr = new Html5Qrcode("reader");
+    await qr.start(cameraConstraints, cameraConfig, handleScannedPayload);
+  } catch(e) {
+    console.warn("Camera restart error", e);
+  }
 }
 document.querySelector("#resetBtn").addEventListener("click", doReset);
 const resetBtnTop = document.querySelector("#resetBtnTop");
@@ -383,10 +393,23 @@ const qrbox = (vw, vh) => {
   const size = Math.floor(Math.min(vw, vh) * (isMobile ? 0.70 : 0.60));
   return { width: size, height: size };
 };
-const qr = new Html5Qrcode("reader");
+let qr = new Html5Qrcode("reader");
 const cameraConstraints = { facingMode: "environment" };
 const cameraConfig = { fps: 10, qrbox, aspectRatio: 1.333 };
 qr.start(cameraConstraints, cameraConfig, handleScannedPayload);
+
+async function stopCamera() {
+  try { await qr.stop(); } catch(e) { console.warn("Camera stop error", e); }
+}
+
+async function startCamera() {
+  try {
+    await qr.start(cameraConstraints, cameraConfig, handleScannedPayload);
+  } catch(e) {
+    console.warn("Camera start error", e);
+  }
+}
+
 
 // Unified upload handler (image+text) with jsQR fallback
 document.querySelector("#fileInput").addEventListener("change", async (e)=>{
@@ -407,7 +430,20 @@ document.querySelector("#fileInput").addEventListener("change", async (e)=>{
         } catch(_e){ decodedText = null; }
         finally {
           // restart camera for live scanning again
-          try { await qr.start(cameraConstraints, cameraConfig, handleScannedPayload); } catch(_e){}
+          try { await qr.start(cameraConstraints, cameraConfig, handleScannedPayload);
+
+async function stopCamera() {
+  try { await qr.stop(); } catch(e) { console.warn("Camera stop error", e); }
+}
+
+async function startCamera() {
+  try {
+    await qr.start(cameraConstraints, cameraConfig, handleScannedPayload);
+  } catch(e) {
+    console.warn("Camera start error", e);
+  }
+}
+ } catch(_e){}
         }
       }
       // 2) jsQR fallback
