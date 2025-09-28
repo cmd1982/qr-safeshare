@@ -1,6 +1,6 @@
 # QR SafeShare
 
-QR SafeShare is a free and open source tool that lets you split and combine secrets (passwords, recovery phrases, or notes) into multiple QR codes.  
+QR SafeShare is a free tool that lets you split and combine secrets (passwords, recovery phrases, or notes) into multiple QR codes.  
 It supports **XOR splitting** and **Shamir’s Secret Sharing** for secure and flexible backups.  
 All processing happens fully locally in your browser — nothing is ever sent to a server.
 
@@ -60,7 +60,7 @@ Once installed, QR SafeShare runs fullscreen and can also be used completely off
 - Each QR code on its own is mathematically worthless.  
 - The secret can only be reconstructed when the required number of QR codes are combined.  
 - Even with a supercomputer or a future quantum computer, a single part reveals nothing.  
-- All code is open source, transparent, and reviewable.
+- All code is published on GitHub, transparent, and reviewable.
 
 ---
 
