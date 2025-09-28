@@ -2,7 +2,7 @@
 
 QR SafeShare is a free tool that lets you split and combine secrets (passwords, recovery phrases, or notes) into multiple QR codes.  
 It supports **XOR splitting** and **Shamir’s Secret Sharing** for secure and flexible backups.  
-All processing happens fully locally in your browser — nothing is ever sent to a server.
+All processing happens fully locally in your browser. Nothing is ever sent to a server.
 
 👉 Live demo: [https://qrsafeshare.com](https://qrsafeshare.com)
 
