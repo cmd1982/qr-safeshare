@@ -200,7 +200,7 @@
 <section class="bg-white rounded-xl shadow p-6" id="payload">
   <h2 class="text-xl font-semibold mb-2">Embed payload in your own HTML</h2>
   <p>
-    If you prefer not to use a QR code or NFC directly, you can also create a small HTML file that redirects to the Combine page with the payload already embedded in the URL. 
+    If you prefer not to use a QR code, you can also create a small HTML file that redirects to the Combine page with the payload already embedded in the URL.
     This file can be uploaded to your own webhosting. Anyone who visits the page will be redirected straight into <code>combine.html</code> with the data preloaded.
   </p>
   <p class="mt-2">
@@ -214,7 +214,7 @@
   &lt;meta name="robots" content="noindex,nofollow"&gt;
   &lt;title&gt;Redirecting…&lt;/title&gt;
   &lt;script&gt;
-    const payload = encodeURIComponent('{"id":"set123","t":"s","i":1,"k":2,"d":"abcdef1234","c":"crypto","wc":12}');
+    const payload = encodeURIComponent('{"t":"s","c":"crypto","n":3,"k":2,"i":2,"id":"d8a851ae","d":"802f"}');
     window.location.replace("https://qrsafeshare.com/combine.html#" + payload);
   &lt;/script&gt;
 &lt;/head&gt;
@@ -223,8 +223,12 @@
 &lt;/body&gt;
 &lt;/html&gt;</code></pre>
   <p class="mt-2">
-    Place this file on your hosting and program your NFC tag to point to its URL. 
-    When someone scans the tag, their browser will open this file, which instantly forwards them to the Combine page with the embedded payload.
+    Place this file on your hosting and (optionally) link to it or write its URL onto an NFC tag.
+    When someone opens the URL, their browser will load this file, which instantly forwards them to the Combine page with the embedded payload.
+  </p>
+
+  <p class="mt-4 font-semibold text-sm text-gray-700">
+    <strong>Security tip:</strong> it may be wise to protect this file or directory with a password (HTTP Basic Auth or similar), or use a time-limited/signed URL. This prevents anyone who finds the URL from immediately accessing the embedded payload.
   </p>
 </section>
 
