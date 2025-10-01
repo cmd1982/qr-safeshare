@@ -34,6 +34,7 @@
 <li><a href="#technical">For the technically inclined</a></li>
 <li><a href="#shamir">Shamir’s Secret Sharing explained</a></li>
 <li><a href="#terminal">Storing QR codes on a Linux server</a></li>
+  <li><a href="#payload">Embed payload in your own HTML</a></li>
 <li><a href="#faq">FAQ</a></li>
 </ul>
 </section>
@@ -196,6 +197,37 @@
     while ensuring that nothing ever leaves your secure environment.
   </p>
 </section>
+<section class="bg-white rounded-xl shadow p-6" id="payload">
+  <h2 class="text-xl font-semibold mb-2">Embed payload in your own HTML</h2>
+  <p>
+    If you prefer not to use a QR code or NFC directly, you can also create a small HTML file that redirects to the Combine page with the payload already embedded in the URL. 
+    This file can be uploaded to your own webhosting. Anyone who visits the page will be redirected straight into <code>combine.html</code> with the data preloaded.
+  </p>
+  <p class="mt-2">
+    Below is a complete example of such a file (<code>share.html</code>). You can copy, paste, and save it. Replace the JSON inside the <code>payload</code> variable with your own share.
+  </p>
+  <pre class="overflow-x-auto bg-gray-100 p-3 rounded text-sm"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;meta name="robots" content="noindex,nofollow"&gt;
+  &lt;title&gt;Redirecting…&lt;/title&gt;
+  &lt;script&gt;
+    const payload = encodeURIComponent('{"id":"set123","t":"s","i":1,"k":2,"d":"abcdef1234","c":"crypto","wc":12}');
+    window.location.replace("https://qrsafeshare.com/combine.html#" + payload);
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;p&gt;Redirecting to QR SafeShare…&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  <p class="mt-2">
+    Place this file on your hosting and program your NFC tag to point to its URL. 
+    When someone scans the tag, their browser will open this file, which instantly forwards them to the Combine page with the embedded payload.
+  </p>
+</section>
+
 <section class="bg-white rounded-xl shadow p-6" id="faq">
 <h2 class="text-xl font-semibold mb-4">Frequently Asked Questions</h2>
 <div class="space-y-4">
