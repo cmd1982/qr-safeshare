@@ -4,7 +4,7 @@ QR SafeShare is a free tool that lets you split and combine secrets (passwords, 
 It supports **XOR splitting** and **Shamir’s Secret Sharing** for secure and flexible backups.  
 All processing happens fully locally in your browser. Nothing is ever sent to a server.
 
-👉 Live demo: [https://qrsafeshare.com](https://qrsafeshare.com)
+👉 Official site: [https://qrsafeshare.com](https://qrsafeshare.com)
 
 ---
 
