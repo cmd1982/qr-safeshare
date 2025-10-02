@@ -138,7 +138,7 @@ function isCompressedBip39Data(firstShare, bytes){
   return firstShare && firstShare.c === 'crypto' && firstShare.wc;
 }
 
-/* ---------- Audio unlock & feedback (beep + vibration) ---------- */
+/* ---------- Audio unlock & feedback (beep) ---------- */
 (function(){
   function unlock(){
     const b=document.getElementById('beepSound');
@@ -175,9 +175,6 @@ function feedbackSuccess(){
     try{ snd.currentTime=0; }catch(e){}
     snd.play().catch(()=>{});
     snd.addEventListener('ended', ()=>{ snd.remove(); });
-  }
-  if(navigator.vibrate){
-    navigator.vibrate(150);
   }
 }
 
