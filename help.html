@@ -83,17 +83,21 @@
   </p>
 <h3 class="font-semibold mt-6 mb-2">3. Dead man’s switch for a password vault</h3>
 <p>
-    A <strong>dead man’s switch</strong> is a system that checks if you are still alive or active. It sends you periodic messages, and if you stop responding it automatically triggers an action, such as sending an email.
-  </p>
+A <strong>dead man’s switch</strong> is a system that checks if you are still alive or active. It sends you periodic messages, and if you stop responding it automatically triggers an action, such as sending an email.
+</p>
 <p class="mt-2">
-    If you simply email a password, it can sit unprotected in someone’s inbox and be intercepted. That creates a single point of failure.
-  </p>
+If you simply email a password, it may sit unprotected in someone’s inbox and be intercepted — creating a single point of failure.
+</p>
 <p class="mt-2">
-    With <strong>XOR 2-2</strong>, you split the vault password in two parts. One QR code is stored on a USB stick together with the vault.
-    The dead man’s switch sends the second part as a special link to a family member who should receive access to the vault.
-    Only by combining the USB QR and the emailed link locally in the browser can the password be reconstructed.
-    A hacker with the email or a burglar with the USB alone gains nothing.
-  </p>
+With <strong>XOR 2-2</strong>, you split the master password of a password vault into two parts:
+</p>
+<ul class="list-disc ml-5 mt-2 space-y-1">
+<li>One QR code is stored on a USB stick together with the encrypted vault itself. The USB stick is then placed in a physical safe.</li>
+<li>The dead man’s switch sends the second part as a special link to a family member who should receive access if something happens to you.</li>
+</ul>
+<p class="mt-2">
+Only by combining the USB QR with the emailed link locally in the browser can the vault password be reconstructed. A hacker who only has the email, or a burglar who only steals the USB from the safe, gains nothing.
+</p>
 </section>
 <section class="bg-white rounded-xl shadow p-6" id="split">
 <h2 class="text-xl font-semibold mb-2">How does splitting work?</h2>
